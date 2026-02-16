@@ -177,6 +177,12 @@ const QuestionsModule = {
       header.appendChild(tag);
       header.appendChild(topicTag);
 
+      // TTS 듣기 버튼
+      if (TtsUtil.isSupported()) {
+        const ttsBtn = TtsUtil.createButton(q.question_text, 'sm');
+        header.appendChild(ttsBtn);
+      }
+
       const text = document.createElement('div');
       text.className = 'question-text';
       text.textContent = q.question_text;

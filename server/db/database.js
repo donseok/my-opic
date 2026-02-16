@@ -35,11 +35,12 @@ function getDatabase() {
     db.exec(seed);
     console.log('[DB] 초기 데이터 투입 완료');
   } else {
-    // 답변 가이드 등 추가 시드 데이터 보충 (INSERT OR IGNORE)
+    // 답변 가이드 등 추가 시드 데이터 보충 (INSERT OR IGNORE로 중복 안전)
     const guideCount = db.prepare('SELECT COUNT(*) as count FROM answer_guides').get().count;
-    if (guideCount === 0) {
+    if (guideCount < 42) {
       db.exec(seed);
-      console.log('[DB] 답변 가이드 등 보충 데이터 투입 완료');
+      const newCount = db.prepare('SELECT COUNT(*) as count FROM answer_guides').get().count;
+      console.log(`[DB] 답변 가이드 보충 완료: ${guideCount} → ${newCount}개`);
     } else {
       console.log('[DB] 기존 데이터 확인 — 시드 생략');
     }

@@ -121,6 +121,43 @@
   color: var(--accent);
 }
 
+/* 준비 시간 문제 미리보기 */
+.prep-question-preview {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  margin-top: 16px;
+  text-align: center;
+}
+
+.prep-preview-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.prep-preview-text {
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+/* 질문 + TTS 버튼 행 */
+.exam-question-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.exam-question-row .exam-question-text {
+  flex: 1;
+  margin-bottom: 0;
+}
+
 /* 답변 영역 */
 .exam-question-text {
   background: var(--bg-card);

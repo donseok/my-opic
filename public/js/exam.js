@@ -1,5 +1,5 @@
 // 모의시험 모듈 (FR-014~021)
-// 시험 시작, 준비 타이머, 답변 입력, 결과 요약
+// 시험 시작, 준비 타이머, 답변 입력, 결과 요약, TTS 문제 읽기
 const ExamModule = {
   questions: [],      // 시험 문제 배열
   currentIndex: 0,    // 현재 문제 인덱스
@@ -9,6 +9,7 @@ const ExamModule = {
   isActive: false,    // 시험 진행 중 여부
   sessionId: null,    // 저장된 세션 ID
   questionStartTime: null, // 문제별 시작 시간 (실제 소요 시간 계산용)
+  _navGuardBound: null,    // 네비게이션 가드 핸들러
 
   /**
    * 모의시험 화면 렌더링
@@ -118,6 +119,12 @@ const ExamModule = {
   async startExam(topicIds) {
     try {
       const data = await apiPost('/exam/start', { topic_ids: topicIds });
+
+      if (!data.questions || data.questions.length === 0) {
+        showToast('선택한 주제에 문제가 없습니다. 주제를 변경해주세요.', 'error');
+        return;
+      }
+
       this.questions = data.questions;
       this.targetLevel = data.target_level;
       this.targetWords = data.target_words;
@@ -125,6 +132,9 @@ const ExamModule = {
       this.answers = [];
       this.isActive = true;
       this.sessionId = null;
+
+      // 네비게이션 가드 설치
+      this.installNavGuard();
 
       const container = document.getElementById('app-content');
       this.showPrepTimer(container);
@@ -134,12 +144,75 @@ const ExamModule = {
   },
 
   /**
-   * 준비 타이머 표시 (8초)
+   * 네비게이션 가드 — 시험 중 탭 이동 방지
+   */
+  installNavGuard() {
+    this.removeNavGuard();
+    this._navGuardBound = (e) => {
+      if (!this.isActive) return;
+      const hash = window.location.hash.replace('#', '');
+      if (hash !== 'exam') {
+        if (!confirm('시험이 진행 중입니다. 나가면 진행 상황이 사라집니다. 정말 나가시겠습니까?')) {
+          e.preventDefault();
+          window.location.hash = '#exam';
+        } else {
+          this.isActive = false;
+          TimerUtil.stop();
+          TtsUtil.stop();
+          this.removeNavGuard();
+        }
+      }
+    };
+    window.addEventListener('hashchange', this._navGuardBound);
+  },
+
+  /**
+   * 네비게이션 가드 제거
+   */
+  removeNavGuard() {
+    if (this._navGuardBound) {
+      window.removeEventListener('hashchange', this._navGuardBound);
+      this._navGuardBound = null;
+    }
+  },
+
+  /**
+   * 준비 타이머 표시 (8초) + 문제 미리보기 + TTS 자동 읽기
    */
   showPrepTimer(container) {
+    const q = this.questions[this.currentIndex];
+
     TimerUtil.startPrepTimer(container, 8, () => {
+      TtsUtil.stop();
       this.renderExamQuestion(container);
     });
+
+    // 준비 타이머 아래에 문제 미리보기 추가
+    if (q) {
+      const preview = document.createElement('div');
+      preview.className = 'prep-question-preview';
+
+      const previewLabel = document.createElement('div');
+      previewLabel.className = 'prep-preview-label';
+      previewLabel.textContent = '문제 ' + (this.currentIndex + 1) + '/' + this.questions.length;
+      preview.appendChild(previewLabel);
+
+      const previewText = document.createElement('div');
+      previewText.className = 'prep-preview-text';
+      previewText.textContent = q.question_text;
+      preview.appendChild(previewText);
+
+      // TTS 듣기 버튼
+      if (TtsUtil.isSupported()) {
+        const ttsBtn = TtsUtil.createButton(q.question_text, 'lg');
+        preview.appendChild(ttsBtn);
+
+        // 준비 시간에 자동으로 문제 읽기
+        TtsUtil.speak(q.question_text);
+      }
+
+      container.appendChild(preview);
+    }
   },
 
   /**
@@ -147,6 +220,7 @@ const ExamModule = {
    */
   renderExamQuestion(container) {
     container.replaceChildren();
+    TtsUtil.stop();
 
     const q = this.questions[this.currentIndex];
     if (!q) {
@@ -173,11 +247,22 @@ const ExamModule = {
     progress.appendChild(questionNum);
     container.appendChild(progress);
 
-    // 질문 텍스트
+    // 질문 텍스트 + TTS 버튼
+    const questionRow = document.createElement('div');
+    questionRow.className = 'exam-question-row';
+
     const questionText = document.createElement('div');
     questionText.className = 'exam-question-text';
     questionText.textContent = q.question_text;
-    container.appendChild(questionText);
+    questionRow.appendChild(questionText);
+
+    // TTS 듣기 버튼
+    if (TtsUtil.isSupported()) {
+      const ttsBtn = TtsUtil.createButton(q.question_text, 'md');
+      questionRow.appendChild(ttsBtn);
+    }
+
+    container.appendChild(questionRow);
 
     // 타이머 정보
     const timerInfo = document.createElement('div');
@@ -275,6 +360,9 @@ const ExamModule = {
       },
       () => this.nextQuestion(container)
     );
+
+    // 답변 시간에 자동 포커스
+    textarea.focus();
   },
 
   /**
@@ -282,6 +370,7 @@ const ExamModule = {
    */
   nextQuestion(container) {
     TimerUtil.stop();
+    TtsUtil.stop();
 
     // 현재 답변 저장
     const textarea = document.getElementById('exam-answer');
@@ -316,6 +405,8 @@ const ExamModule = {
   async completeExam(container) {
     this.isActive = false;
     TimerUtil.stop();
+    TtsUtil.stop();
+    this.removeNavGuard();
 
     container.replaceChildren();
 
@@ -380,7 +471,6 @@ const ExamModule = {
     feedbackBtn.addEventListener('click', () => {
       if (this.sessionId) {
         FeedbackModule.requestFeedback(this.sessionId, this.answers, this.targetLevel);
-        // 피드백 탭으로 이동
         window.location.hash = '#feedback';
       }
     });

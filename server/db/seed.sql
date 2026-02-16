@@ -215,3 +215,91 @@ INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key
 -- 직장/업무 (질문 47) - IM2
 INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
 (21, 47, 'IM2', '1. 회사와 직무 소개\n2. 일과와 주요 업무 상세\n3. 직장에서 배운 점\n4. 향후 커리어 계획\n5. 마무리', '["I am currently employed at","On a typical day, I handle tasks such as","Through my work, I have gained valuable experience in","In the future, I hope to advance my career by"]', 70);
+
+-- =============================================
+-- 6. 추가 답변 가이드 (서베이/콤보 질문 보충)
+-- =============================================
+
+-- 일상 루틴 (질문 2) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(22, 2, 'IM1', '1. 아침 일과 (기상, 아침식사)\n2. 낮 활동 (학교/직장)\n3. 저녁 일과 (취미, 휴식)\n4. 잠자리 루틴', '["I usually wake up at","After breakfast, I go to","In the evening, I like to","Before going to bed, I usually"]', 60);
+
+-- 취미 (질문 3) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(23, 3, 'IM1', '1. 취미 소개\n2. 시작한 계기\n3. 즐기는 방법\n4. 취미가 주는 즐거움', '["One of my hobbies is","I first got into it when","I usually do this by","It makes me happy because"]', 60);
+
+-- 가족 소개 (질문 4) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(24, 4, 'IM1', '1. 가족 구성원 소개\n2. 부모님 직업/특징\n3. 형제자매 소개\n4. 가족과 함께하는 활동', '["There are four people in my family","My father works as","My mother is","We often spend time together by"]', 60);
+
+-- 이웃 (질문 8) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(25, 8, 'IM1', '1. 동네 위치와 분위기\n2. 주변 시설 소개\n3. 좋아하는 점\n4. 마무리', '["I live in a neighborhood called","There are many facilities nearby such as","What I like about my neighborhood is","Overall, it is a great place to live"]', 60);
+
+-- 집의 좋은 점 (질문 9) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(26, 9, 'IM1', '1. 집에서 가장 좋아하는 점\n2. 그 이유 설명\n3. 바꾸고 싶은 점\n4. 마무리', '["What I like most about my home is","The reason is that","If I could change one thing, it would be","Other than that, I am happy with my home"]', 60);
+
+-- 새로운 취미 (질문 13) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(27, 13, 'IM1', '1. 최근 시작한 취미 소개\n2. 시작한 이유\n3. 하는 방법과 빈도\n4. 느낀 점', '["I recently started","The reason I started was","I do this about","So far, I really enjoy it because"]', 60);
+
+-- 여가 변화 (질문 15) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(28, 15, 'IM2', '1. 과거의 여가 활동\n2. 현재의 여가 활동\n3. 변화의 이유\n4. 현재 여가에 대한 생각\n5. 마무리', '["When I was younger, I used to","These days, I prefer to","The main reason for this change is","I think this shift reflects","Looking back, I appreciate both"]', 70);
+
+-- 여행 준비 (질문 18) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(29, 18, 'IM1', '1. 여행 준비 시작 시기\n2. 숙소/교통 예약\n3. 짐 싸기\n4. 기타 준비사항', '["When I plan a trip, I start by","First, I book the accommodation and transportation","Then, I pack my bags with","I also make sure to"]', 60);
+
+-- 기억에 남는 여행 (질문 19) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(30, 19, 'IM2', '1. 여행지와 시기\n2. 여행의 특별한 이유\n3. 가장 기억에 남는 순간\n4. 여행에서 배운 점\n5. 마무리', '["The most memorable trip I have taken was to","What made this trip special was","The moment I will never forget is when","This experience taught me that","I would love to go back someday"]', 70);
+
+-- 스포츠 경기 관람 (질문 23) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(31, 23, 'IM1', '1. 최근 본 경기 소개\n2. 어디서 봤는지\n3. 경기 내용\n4. 느낀 점', '["I recently watched a","I watched it on","The game was really exciting because","I felt very happy when"]', 60);
+
+-- 운동 습관 변화 (질문 25) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(32, 25, 'IM2', '1. 과거의 운동 습관\n2. 현재의 운동 습관\n3. 변화의 이유\n4. 운동이 삶에 미친 영향\n5. 마무리', '["A few years ago, I used to","Nowadays, my exercise routine includes","The reason for this change was","Exercise has had a positive impact on","I plan to continue improving my fitness"]', 70);
+
+-- 최근 본 영화 (질문 28) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(33, 28, 'IM1', '1. 영화 제목과 장르\n2. 줄거리 간단 소개\n3. 인상 깊었던 장면\n4. 추천 여부', '["I recently watched a movie called","It is about","The part I liked the most was","I would recommend this movie to"]', 60);
+
+-- 콘서트/영화 경험 (질문 30) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(34, 30, 'IM2', '1. 경험 소개 (언제, 어디서)\n2. 특별했던 이유\n3. 기억에 남는 순간\n4. 함께한 사람들과의 추억\n5. 마무리', '["One of the most memorable experiences was when","It was special because","The moment that stood out the most was","I was there with","It is an experience I will always cherish"]', 70);
+
+-- 좋아하는 식당 (질문 33) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(35, 33, 'IM1', '1. 식당 이름과 위치\n2. 자주 시키는 메뉴\n3. 좋아하는 이유\n4. 마무리', '["My favorite restaurant is","I usually order","The food is always","I recommend this place because"]', 60);
+
+-- 식습관 변화 (질문 35) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(36, 35, 'IM2', '1. 과거의 식습관\n2. 현재의 식습관\n3. 변화의 계기\n4. 건강에 미친 영향\n5. 마무리', '["In the past, I used to eat","Now, I try to focus on","The turning point was when","Since changing my diet, I have noticed","I believe healthy eating is important for"]', 70);
+
+-- 인터넷 사용 (질문 38) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(37, 38, 'IM1', '1. 인터넷 사용 빈도\n2. 자주 사용하는 사이트/앱\n3. 주로 하는 활동\n4. 마무리', '["I use the internet every day","The apps I use most often are","I mainly use it to","The internet is very useful for"]', 60);
+
+-- 기술과 소통 변화 (질문 40) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(38, 40, 'IM2', '1. 과거의 소통 방식\n2. 현재의 소통 방식\n3. 기술이 가져온 긍정적 변화\n4. 부정적 측면\n5. 마무리', '["In the past, people mainly communicated through","Today, technology has made it possible to","One positive change is that","However, some drawbacks include","Overall, I think technology has transformed"]', 70);
+
+-- 좋아했던 과목 (질문 43) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(39, 43, 'IM1', '1. 좋아했던 과목 소개\n2. 좋아한 이유\n3. 기억에 남는 수업/활동\n4. 마무리', '["My favorite subject was","I liked it because","I remember one time when","This subject helped me to"]', 60);
+
+-- 교육 변화 (질문 45) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(40, 45, 'IM2', '1. 과거의 교육 방식\n2. 현재의 교육 방식\n3. 주요 차이점\n4. 변화에 대한 의견\n5. 마무리', '["Education in the past was focused on","Nowadays, education has shifted toward","One major difference is that","I believe this change is beneficial because","However, there are also challenges such as"]', 70);
+
+-- 직장에서의 하루 (질문 48) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(41, 48, 'IM1', '1. 출근 시간과 방법\n2. 오전 업무\n3. 점심시간\n4. 오후 업무와 퇴근', '["I usually start work at","In the morning, I handle","During lunch, I usually","In the afternoon, I focus on"]', 60);
+
+-- 직장의 장단점 (질문 49) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(42, 49, 'IM2', '1. 직장의 좋은 점 2~3개\n2. 아쉬운 점 1~2개\n3. 전체적인 만족도\n4. 개선하고 싶은 점\n5. 마무리', '["What I like about my job is","Another advantage is that","On the other hand, one thing I dislike is","Overall, I am quite satisfied with","If I could improve one thing, it would be"]', 70);

@@ -352,6 +352,59 @@ body {
   gap: 12px;
 }
 
+/* TTS 버튼 */
+.tts-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-btn);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-family);
+  flex-shrink: 0;
+}
+
+.tts-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(45, 212, 191, 0.08);
+}
+
+.tts-btn.speaking {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(45, 212, 191, 0.12);
+}
+
+.tts-btn-sm {
+  padding: 4px 8px;
+  font-size: 14px;
+}
+
+.tts-btn-md {
+  padding: 8px 12px;
+  font-size: 18px;
+}
+
+.tts-btn-lg {
+  padding: 10px 20px;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.tts-icon {
+  line-height: 1;
+}
+
+.tts-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
 /* 유틸리티 */
 .mt-8 { margin-top: 8px; }
 .mt-12 { margin-top: 12px; }

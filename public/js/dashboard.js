@@ -44,7 +44,8 @@ const DashboardModule = {
         { label: '총 시험 횟수', value: stats.total_exams + '회' },
         { label: '최근 예상 등급', value: stats.latest_level || '-' },
         { label: '평균 문법', value: stats.avg_grammar + '점' },
-        { label: '평균 유창성', value: stats.avg_fluency + '점' }
+        { label: '평균 유창성', value: stats.avg_fluency + '점' },
+        { label: '평균 어휘', value: stats.avg_vocabulary + '점' }
       ];
 
       statItems.forEach(s => {
