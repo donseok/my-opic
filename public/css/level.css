@@ -1,0 +1,136 @@
+/* 레벨 설정 화면 스타일 */
+
+.level-section {
+  margin-bottom: 24px;
+}
+
+.level-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.level-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.level-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.level-item:hover {
+  background: var(--bg-card-hover);
+}
+
+.level-item.selected {
+  border-color: var(--accent);
+  background: rgba(45, 212, 191, 0.08);
+}
+
+.level-item.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.level-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.level-code {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 40px;
+}
+
+.level-name {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.level-words {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* 갭 분석 */
+.gap-analysis {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.gap-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.gap-levels {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.gap-level-badge {
+  padding: 8px 16px;
+  border-radius: var(--radius-badge);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.gap-current {
+  background: rgba(148, 163, 184, 0.2);
+  color: var(--text-secondary);
+}
+
+.gap-arrow {
+  color: var(--accent);
+  font-size: 20px;
+}
+
+.gap-target {
+  background: rgba(45, 212, 191, 0.15);
+  color: var(--accent);
+}
+
+.gap-steps {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.gap-steps strong {
+  color: var(--accent);
+}
+
+.gap-details {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  text-align: center;
+}

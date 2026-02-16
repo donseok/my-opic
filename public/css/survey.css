@@ -1,0 +1,80 @@
+/* 서베이 설정 화면 스타일 */
+
+.survey-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.survey-count {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.survey-count strong {
+  color: var(--accent);
+}
+
+.survey-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.topic-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.topic-card:hover {
+  background: var(--bg-card-hover);
+}
+
+.topic-card.selected {
+  border-color: var(--accent);
+  background: rgba(45, 212, 191, 0.08);
+}
+
+.topic-card.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.topic-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.topic-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.topic-name-en {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.survey-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.survey-message {
+  font-size: 13px;
+  color: var(--warning);
+  text-align: center;
+  min-height: 20px;
+}
