@@ -127,3 +127,91 @@ INSERT OR IGNORE INTO questions (id, topic_id, question_text, type, difficulty) 
 (53, 3, 'Describe the weather in your country. How does it affect your daily life?', 'unexpected', 'medium'),
 (54, 5, 'Tell me about a health issue you or someone you know experienced.', 'unexpected', 'hard'),
 (55, 8, 'What changes would you like to see in your community?', 'unexpected', 'hard');
+
+-- =============================================
+-- 5. 답변 가이드 (주제별 대표 질문, 레벨별 가이드)
+-- =============================================
+
+-- 자기소개 (질문 1) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(1, 1, 'IM1', '1. 인사 및 이름 소개\n2. 직업 또는 학교 소개\n3. 취미와 관심사 1~2개\n4. 간단한 마무리', '["Let me tell you about myself","I am currently working as","In my free time, I enjoy","That is a little bit about me"]', 60);
+
+-- 자기소개 (질문 1) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(2, 1, 'IM2', '1. 자연스러운 인사와 소개\n2. 직업/전공 상세 설명\n3. 취미와 관심사 2~3개 (이유 포함)\n4. 성격 또는 가치관 언급\n5. 마무리', '["I would like to introduce myself","I have been working in the field of","What I really enjoy doing is","I consider myself to be"]', 70);
+
+-- 자기소개 (질문 1) - IH
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(3, 1, 'IH', '1. 매력적인 도입부\n2. 직업/전공과 경력 상세\n3. 다양한 관심사와 그 배경\n4. 성격과 가치관\n5. 미래 계획\n6. 인상적인 마무리', '["To give you a complete picture of who I am","Throughout my career, I have developed","What truly drives me is","Looking ahead, I aspire to"]', 110);
+
+-- 집/이웃 (질문 7) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(4, 7, 'IM1', '1. 집 유형 소개 (아파트/주택)\n2. 방 개수와 구조\n3. 좋아하는 공간\n4. 마무리', '["I live in a","It has about","My favorite room is","I really like my home because"]', 60);
+
+-- 집/이웃 (질문 7) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(5, 7, 'IM2', '1. 집 위치와 유형\n2. 구조와 인테리어 설명\n3. 주변 환경\n4. 좋아하는 점과 아쉬운 점\n5. 마무리', '["My home is located in","The layout includes","What I appreciate most about my home is","If I could change one thing"]', 70);
+
+-- 여가활동 (질문 12) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(6, 12, 'IM1', '1. 여가 시간 소개\n2. 주요 활동 1~2개\n3. 활동하는 빈도\n4. 좋아하는 이유', '["In my free time","I usually spend time","I do this about","I enjoy it because"]', 60);
+
+-- 여가활동 (질문 12) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(7, 12, 'IM2', '1. 여가 시간의 중요성\n2. 주요 활동 2~3개 상세 설명\n3. 최근 경험 에피소드\n4. 여가 활동이 주는 혜택\n5. 마무리', '["I believe free time is essential for","My go-to activities include","Recently, I had a great time when","These activities help me to"]', 70);
+
+-- 여행 (질문 17) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(8, 17, 'IM1', '1. 최근 여행지 소개\n2. 누구와 갔는지\n3. 한 활동들\n4. 느낀 점', '["I recently went to","I traveled with","While I was there, I","It was a great experience because"]', 60);
+
+-- 여행 (질문 17) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(9, 17, 'IM2', '1. 여행 배경과 동기\n2. 여행지 상세 설명\n3. 주요 활동과 경험\n4. 기억에 남는 에피소드\n5. 전체 소감과 마무리', '["The reason I chose to visit","The destination was known for","One of the highlights of the trip was","Overall, this trip taught me"]', 70);
+
+-- 운동/스포츠 (질문 22) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(10, 22, 'IM1', '1. 좋아하는 운동 소개\n2. 운동 빈도와 장소\n3. 운동을 좋아하는 이유\n4. 마무리', '["My favorite exercise is","I usually work out","I do this about","I enjoy it because it helps me"]', 60);
+
+-- 운동/스포츠 (질문 22) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(11, 22, 'IM2', '1. 운동 습관 소개\n2. 좋아하는 운동의 매력\n3. 운동 루틴 상세 설명\n4. 건강에 미치는 영향\n5. 마무리', '["I have always been passionate about","What attracts me to this sport is","My typical routine involves","Since I started, I have noticed"]', 70);
+
+-- 음악/영화 (질문 27) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(12, 27, 'IM1', '1. 좋아하는 음악 장르\n2. 좋아하는 아티스트\n3. 음악을 듣는 시간/방법\n4. 마무리', '["I really enjoy listening to","My favorite artist is","I usually listen to music when","Music makes me feel"]', 60);
+
+-- 음악/영화 (질문 27) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(13, 27, 'IM2', '1. 음악 취향 소개\n2. 좋아하는 아티스트와 그 이유\n3. 음악이 생활에 미치는 영향\n4. 최근 들은 음악 에피소드\n5. 마무리', '["I have a diverse taste in music","The reason I admire this artist is","Music plays an important role in my life","Recently, I discovered a song that"]', 70);
+
+-- 요리/음식 (질문 32) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(14, 32, 'IM1', '1. 요리 여부와 빈도\n2. 자주 만드는 음식\n3. 좋아하는 이유\n4. 마무리', '["I like cooking","I usually make","My specialty is","I enjoy cooking because"]', 60);
+
+-- 요리/음식 (질문 32) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(15, 32, 'IM2', '1. 요리에 대한 관심도\n2. 자주 만드는 음식과 방법\n3. 요리를 시작한 계기\n4. 최근 요리 경험\n5. 마무리', '["Cooking has become one of my hobbies","I often prepare dishes such as","I first got interested in cooking when","One memorable cooking experience was"]', 70);
+
+-- 기술/인터넷 (질문 37) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(16, 37, 'IM1', '1. 사용하는 기기 소개\n2. 주로 사용하는 용도\n3. 가장 유용한 기술\n4. 마무리', '["I use technology every day","My most used device is","I mainly use it for","Technology makes my life easier because"]', 60);
+
+-- 기술/인터넷 (질문 37) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(17, 37, 'IM2', '1. 일상 속 기술 활용\n2. 주요 기기와 앱 소개\n3. 기술이 가져온 변화\n4. 기술에 대한 생각\n5. 마무리', '["Technology is deeply integrated into my daily routine","The devices I rely on most are","What has changed significantly thanks to technology is","I believe technology will continue to"]', 70);
+
+-- 교육 (질문 42) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(18, 42, 'IM1', '1. 학교/학력 소개\n2. 전공 또는 관심 분야\n3. 학교 생활 경험\n4. 마무리', '["I studied at","My major was","During my school years","I learned a lot about"]', 60);
+
+-- 교육 (질문 42) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(19, 42, 'IM2', '1. 교육 배경 소개\n2. 전공 선택 이유\n3. 인상 깊었던 수업이나 경험\n4. 교육이 현재에 미친 영향\n5. 마무리', '["My educational background includes","I chose to study this field because","One of the most impactful experiences was","Looking back, my education has shaped"]', 70);
+
+-- 직장/업무 (질문 47) - IM1
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(20, 47, 'IM1', '1. 직업 소개\n2. 주요 업무 설명\n3. 직장의 좋은 점\n4. 마무리', '["I work as a","My main responsibilities include","What I like about my job is","Overall, I enjoy my work"]', 60);
+
+-- 직장/업무 (질문 47) - IM2
+INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
+(21, 47, 'IM2', '1. 회사와 직무 소개\n2. 일과와 주요 업무 상세\n3. 직장에서 배운 점\n4. 향후 커리어 계획\n5. 마무리', '["I am currently employed at","On a typical day, I handle tasks such as","Through my work, I have gained valuable experience in","In the future, I hope to advance my career by"]', 70);

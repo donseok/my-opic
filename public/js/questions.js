@@ -1,7 +1,15 @@
-// 문제은행 모듈 (FR-005~008) — M2에서 상세 구현
+// 문제은행 모듈 (FR-005~008)
+// 주제별 질문 목록, 유형 필터, 답변 가이드
 const QuestionsModule = {
+  allQuestions: [],
+  currentTopicId: null,
+  currentType: '',
+
+  /**
+   * 문제은행 화면 렌더링
+   */
   async render(container) {
-    container.innerHTML = '';
+    container.replaceChildren();
 
     const title = document.createElement('h2');
     title.className = 'section-title';
@@ -9,13 +17,22 @@ const QuestionsModule = {
     container.appendChild(title);
 
     // 선택된 주제 확인
-    let topics, questions;
     try {
-      topics = await apiGet('/topics');
+      const topics = await apiGet('/topics');
       const selectedTopics = topics.filter(t => t.is_selected);
 
       if (selectedTopics.length === 0) {
-        container.innerHTML += '<div class="empty-state"><div class="empty-state-icon">📋</div><p class="empty-state-text">서베이 설정에서 주제를 먼저 선택해주세요.</p></div>';
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        const icon = document.createElement('div');
+        icon.className = 'empty-state-icon';
+        icon.textContent = '📋';
+        const p = document.createElement('p');
+        p.className = 'empty-state-text';
+        p.textContent = '서베이 설정에서 주제를 먼저 선택해주세요.';
+        empty.appendChild(icon);
+        empty.appendChild(p);
+        container.appendChild(empty);
         return;
       }
 
@@ -53,7 +70,7 @@ const QuestionsModule = {
       ];
       types.forEach(t => {
         const btn = document.createElement('button');
-        btn.className = `questions-tab ${t.value === '' ? 'active' : ''}`;
+        btn.className = 'questions-tab' + (t.value === '' ? ' active' : '');
         btn.textContent = t.label;
         btn.dataset.type = t.value;
         btn.addEventListener('click', () => this.filterByType(t.value, filterBar));
@@ -68,19 +85,24 @@ const QuestionsModule = {
       container.appendChild(listEl);
 
       // 전체 질문 로드
-      questions = await apiGet('/questions');
+      const questions = await apiGet('/questions');
       this.allQuestions = questions;
       this.renderQuestions(questions);
 
     } catch (err) {
-      container.innerHTML += '<div class="empty-state"><p class="empty-state-text">질문을 불러올 수 없습니다.</p></div>';
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      const p = document.createElement('p');
+      p.className = 'empty-state-text';
+      p.textContent = '질문을 불러올 수 없습니다.';
+      empty.appendChild(p);
+      container.appendChild(empty);
     }
   },
 
-  allQuestions: [],
-  currentTopicId: null,
-  currentType: '',
-
+  /**
+   * 주제별 필터링
+   */
   filterByTopic(topicId, tabBar) {
     this.currentTopicId = topicId;
     tabBar.querySelectorAll('.questions-tab').forEach(tab => {
@@ -89,6 +111,9 @@ const QuestionsModule = {
     this.applyFilters();
   },
 
+  /**
+   * 유형별 필터링
+   */
   filterByType(type, filterBar) {
     this.currentType = type;
     filterBar.querySelectorAll('.questions-tab').forEach(btn => {
@@ -97,6 +122,9 @@ const QuestionsModule = {
     this.applyFilters();
   },
 
+  /**
+   * 필터 적용
+   */
   applyFilters() {
     let filtered = this.allQuestions;
     if (this.currentTopicId) {
@@ -108,13 +136,22 @@ const QuestionsModule = {
     this.renderQuestions(filtered);
   },
 
+  /**
+   * 질문 목록 렌더링
+   */
   renderQuestions(questions) {
     const listEl = document.getElementById('question-list');
     if (!listEl) return;
-    listEl.innerHTML = '';
+    listEl.replaceChildren();
 
     if (questions.length === 0) {
-      listEl.innerHTML = '<div class="empty-state"><p class="empty-state-text">해당 조건의 질문이 없습니다.</p></div>';
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      const p = document.createElement('p');
+      p.className = 'empty-state-text';
+      p.textContent = '해당 조건의 질문이 없습니다.';
+      empty.appendChild(p);
+      listEl.appendChild(empty);
       return;
     }
 
@@ -128,7 +165,7 @@ const QuestionsModule = {
       header.className = 'question-header';
 
       const tag = document.createElement('span');
-      tag.className = `question-type-tag tag-${q.type}`;
+      tag.className = 'question-type-tag tag-' + q.type;
       tag.textContent = typeLabels[q.type] || q.type;
 
       const topicTag = document.createElement('span');
@@ -154,6 +191,9 @@ const QuestionsModule = {
     });
   },
 
+  /**
+   * 답변 가이드 표시/숨기기
+   */
   async toggleGuide(questionId, cardEl) {
     const existing = cardEl.querySelector('.guide-panel');
     if (existing) {
@@ -164,37 +204,69 @@ const QuestionsModule = {
     try {
       const settings = await apiGet('/settings');
       const levelCode = settings.target_level || 'IM1';
-      const guides = await apiGet(`/questions/${questionId}/guide?level_code=${levelCode}`);
+      const guides = await apiGet('/questions/' + questionId + '/guide?level_code=' + levelCode);
+
+      const panel = document.createElement('div');
+      panel.className = 'guide-panel';
 
       if (guides.length === 0) {
-        const panel = document.createElement('div');
-        panel.className = 'guide-panel';
-        panel.innerHTML = '<p class="guide-content">이 질문에 대한 답변 가이드가 아직 없습니다.</p>';
+        const p = document.createElement('p');
+        p.className = 'guide-content';
+        p.textContent = '이 질문에 대한 답변 가이드가 아직 없습니다.';
+        panel.appendChild(p);
         cardEl.appendChild(panel);
         return;
       }
 
       const guide = guides[0];
-      const panel = document.createElement('div');
-      panel.className = 'guide-panel';
 
-      let html = '';
+      // 답변 구조
       if (guide.structure) {
-        html += `<div class="guide-section-title">📝 답변 구조</div><div class="guide-content">${guide.structure}</div>`;
+        const structTitle = document.createElement('div');
+        structTitle.className = 'guide-section-title';
+        structTitle.textContent = '📝 답변 구조';
+        panel.appendChild(structTitle);
+
+        const structContent = document.createElement('div');
+        structContent.className = 'guide-content';
+        structContent.textContent = guide.structure;
+        panel.appendChild(structContent);
       }
+
+      // 핵심 표현
       if (guide.key_phrases) {
         try {
           const phrases = JSON.parse(guide.key_phrases);
-          html += '<div class="guide-section-title">💬 핵심 표현</div><div class="guide-phrases">';
-          phrases.forEach(p => { html += `<span class="guide-phrase">${p}</span>`; });
-          html += '</div>';
+          const phrasesTitle = document.createElement('div');
+          phrasesTitle.className = 'guide-section-title';
+          phrasesTitle.textContent = '💬 핵심 표현';
+          panel.appendChild(phrasesTitle);
+
+          const phrasesDiv = document.createElement('div');
+          phrasesDiv.className = 'guide-phrases';
+          phrases.forEach(p => {
+            const span = document.createElement('span');
+            span.className = 'guide-phrase';
+            span.textContent = p;
+            phrasesDiv.appendChild(span);
+          });
+          panel.appendChild(phrasesDiv);
         } catch (e) { /* 파싱 실패 무시 */ }
       }
+
+      // 목표 단어 수
       if (guide.target_words) {
-        html += `<div class="guide-section-title mt-12">🎯 목표 단어 수</div><div class="guide-content">${guide.target_words}단어</div>`;
+        const wordsTitle = document.createElement('div');
+        wordsTitle.className = 'guide-section-title mt-12';
+        wordsTitle.textContent = '🎯 목표 단어 수';
+        panel.appendChild(wordsTitle);
+
+        const wordsContent = document.createElement('div');
+        wordsContent.className = 'guide-content';
+        wordsContent.textContent = guide.target_words + '단어';
+        panel.appendChild(wordsContent);
       }
 
-      panel.innerHTML = html;
       cardEl.appendChild(panel);
     } catch (err) {
       console.error('가이드 로드 실패:', err);

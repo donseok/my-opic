@@ -28,14 +28,21 @@ function getDatabase() {
   const schema = fs.readFileSync(SCHEMA_PATH, 'utf-8');
   db.exec(schema);
 
-  // 시드 데이터 투입 (이미 데이터 있으면 skip — INSERT OR IGNORE 사용)
-  const seedDataExists = db.prepare('SELECT COUNT(*) as count FROM survey_topics').get();
-  if (seedDataExists.count === 0) {
-    const seed = fs.readFileSync(SEED_PATH, 'utf-8');
+  // 시드 데이터 투입 (INSERT OR IGNORE로 중복 방지)
+  const seed = fs.readFileSync(SEED_PATH, 'utf-8');
+  const topicCount = db.prepare('SELECT COUNT(*) as count FROM survey_topics').get().count;
+  if (topicCount === 0) {
     db.exec(seed);
     console.log('[DB] 초기 데이터 투입 완료');
   } else {
-    console.log('[DB] 기존 데이터 확인 — 시드 생략');
+    // 답변 가이드 등 추가 시드 데이터 보충 (INSERT OR IGNORE)
+    const guideCount = db.prepare('SELECT COUNT(*) as count FROM answer_guides').get().count;
+    if (guideCount === 0) {
+      db.exec(seed);
+      console.log('[DB] 답변 가이드 등 보충 데이터 투입 완료');
+    } else {
+      console.log('[DB] 기존 데이터 확인 — 시드 생략');
+    }
   }
 
   console.log(`[DB] SQLite 연결 완료: ${DB_PATH}`);

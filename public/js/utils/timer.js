@@ -16,31 +16,61 @@ const TimerUtil = {
     const circumference = 2 * Math.PI * radius;
     let remaining = seconds;
 
-    container.innerHTML = `
-      <div class="prep-timer">
-        <div class="prep-timer-label">준비 시간</div>
-        <div class="prep-timer-circle">
-          <svg width="120" height="120" viewBox="0 0 120 120">
-            <circle class="timer-bg" cx="60" cy="60" r="${radius}" />
-            <circle class="timer-fg" cx="60" cy="60" r="${radius}"
-              stroke-dasharray="${circumference}"
-              stroke-dashoffset="0"
-              id="prep-timer-fg" />
-          </svg>
-          <div class="prep-timer-count" id="prep-timer-count">${remaining}</div>
-        </div>
-      </div>
-    `;
+    // DOM으로 SVG 타이머 구성
+    container.replaceChildren();
 
-    const fgCircle = document.getElementById('prep-timer-fg');
-    const countEl = document.getElementById('prep-timer-count');
+    const wrapper = document.createElement('div');
+    wrapper.className = 'prep-timer';
+
+    const label = document.createElement('div');
+    label.className = 'prep-timer-label';
+    label.textContent = '준비 시간';
+    wrapper.appendChild(label);
+
+    const circleDiv = document.createElement('div');
+    circleDiv.className = 'prep-timer-circle';
+
+    // SVG는 createElementNS 필요
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('width', '120');
+    svg.setAttribute('height', '120');
+    svg.setAttribute('viewBox', '0 0 120 120');
+
+    const bgCircle = document.createElementNS(svgNS, 'circle');
+    bgCircle.setAttribute('class', 'timer-bg');
+    bgCircle.setAttribute('cx', '60');
+    bgCircle.setAttribute('cy', '60');
+    bgCircle.setAttribute('r', String(radius));
+
+    const fgCircle = document.createElementNS(svgNS, 'circle');
+    fgCircle.setAttribute('class', 'timer-fg');
+    fgCircle.setAttribute('cx', '60');
+    fgCircle.setAttribute('cy', '60');
+    fgCircle.setAttribute('r', String(radius));
+    fgCircle.setAttribute('stroke-dasharray', String(circumference));
+    fgCircle.setAttribute('stroke-dashoffset', '0');
+    fgCircle.id = 'prep-timer-fg';
+
+    svg.appendChild(bgCircle);
+    svg.appendChild(fgCircle);
+    circleDiv.appendChild(svg);
+
+    const countEl = document.createElement('div');
+    countEl.className = 'prep-timer-count';
+    countEl.id = 'prep-timer-count';
+    countEl.textContent = String(remaining);
+    circleDiv.appendChild(countEl);
+
+    wrapper.appendChild(circleDiv);
+    container.appendChild(wrapper);
 
     this.intervalId = setInterval(() => {
       remaining--;
-      if (countEl) countEl.textContent = remaining;
+      if (countEl) countEl.textContent = String(remaining);
       if (fgCircle) {
         const offset = circumference * (1 - remaining / seconds);
-        fgCircle.setAttribute('stroke-dashoffset', offset);
+        fgCircle.setAttribute('stroke-dashoffset', String(offset));
       }
 
       if (remaining <= 0) {
@@ -53,7 +83,7 @@ const TimerUtil = {
   /**
    * 답변 시간 타이머 시작
    * @param {number} totalSeconds - 총 시간 (90 또는 120)
-   * @param {Function} onTick - 매 초 콜백 (remaining)
+   * @param {Function} onTick - 매 초 콜백 (remaining, total)
    * @param {Function} onComplete - 완료 콜백
    */
   startAnswerTimer(totalSeconds, onTick, onComplete) {

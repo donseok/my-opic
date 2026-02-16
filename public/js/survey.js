@@ -9,14 +9,19 @@ const SurveyModule = {
    * 서베이 설정 화면 렌더링
    */
   async render(container) {
-    container.innerHTML = '';
+    container.replaceChildren();
 
     // 주제 목록 로드
     try {
       this.topics = await apiGet('/topics');
       this.selectedIds = this.topics.filter(t => t.is_selected).map(t => t.id);
     } catch (err) {
-      container.innerHTML = '<div class="empty-state"><p>주제 목록을 불러올 수 없습니다</p></div>';
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      const p = document.createElement('p');
+      p.textContent = '주제 목록을 불러올 수 없습니다';
+      empty.appendChild(p);
+      container.appendChild(empty);
       return;
     }
 
@@ -135,7 +140,11 @@ const SurveyModule = {
     const messageEl = document.getElementById('survey-message');
 
     if (countEl) {
-      countEl.innerHTML = `<strong>${count}</strong>/5개 선택`;
+      countEl.replaceChildren();
+      const strong = document.createElement('strong');
+      strong.textContent = count;
+      countEl.appendChild(strong);
+      countEl.appendChild(document.createTextNode('/5개 선택'));
     }
 
     if (saveBtn) {

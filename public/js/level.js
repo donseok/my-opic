@@ -10,7 +10,7 @@ const LevelModule = {
    * 레벨 설정 화면 렌더링
    */
   async render(container) {
-    container.innerHTML = '';
+    container.replaceChildren();
 
     // 데이터 로드
     try {
@@ -19,7 +19,12 @@ const LevelModule = {
       this.currentLevel = settings.current_level;
       this.targetLevel = settings.target_level;
     } catch (err) {
-      container.innerHTML = '<div class="empty-state"><p>레벨 정보를 불러올 수 없습니다</p></div>';
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      const p = document.createElement('p');
+      p.textContent = '레벨 정보를 불러올 수 없습니다';
+      empty.appendChild(p);
+      container.appendChild(empty);
       return;
     }
 
@@ -127,7 +132,7 @@ const LevelModule = {
 
     const words = document.createElement('span');
     words.className = 'level-words';
-    words.textContent = `${level.min_words}단어+`;
+    words.textContent = level.min_words + '단어+';
 
     item.appendChild(info);
     item.appendChild(words);
@@ -192,7 +197,7 @@ const LevelModule = {
     if (!container) return;
 
     if (!this.currentLevel || !this.targetLevel) {
-      container.innerHTML = '';
+      container.replaceChildren();
       return;
     }
 
@@ -207,7 +212,7 @@ const LevelModule = {
     // 프로그레스 바 비율
     const progress = ((currentIdx + 1) / this.levels.length * 100).toFixed(0);
 
-    container.innerHTML = '';
+    container.replaceChildren();
     container.className = 'gap-analysis';
 
     const title = document.createElement('div');
@@ -239,7 +244,10 @@ const LevelModule = {
     // 단계 수
     const stepsEl = document.createElement('div');
     stepsEl.className = 'gap-steps';
-    stepsEl.innerHTML = `<strong>${steps}단계</strong> 차이`;
+    const stepsStrong = document.createElement('strong');
+    stepsStrong.textContent = steps + '단계';
+    stepsEl.appendChild(stepsStrong);
+    stepsEl.appendChild(document.createTextNode(' 차이'));
     container.appendChild(stepsEl);
 
     // 프로그레스 바
@@ -249,14 +257,14 @@ const LevelModule = {
 
     const progressFill = document.createElement('div');
     progressFill.className = 'progress-fill';
-    progressFill.style.width = `${progress}%`;
+    progressFill.style.width = progress + '%';
     progressBar.appendChild(progressFill);
     container.appendChild(progressBar);
 
     // 상세 정보
     const details = document.createElement('div');
     details.className = 'gap-details';
-    details.textContent = `예상 학습 기간: ${minWeeks}~${maxWeeks}주 | 꾸준한 연습이 필요합니다`;
+    details.textContent = '예상 학습 기간: ' + minWeeks + '~' + maxWeeks + '주 | 꾸준한 연습이 필요합니다';
     container.appendChild(details);
   },
 

@@ -1,4 +1,5 @@
 // 모의시험 모듈 (FR-014~021)
+// 시험 시작, 준비 타이머, 답변 입력, 결과 요약
 const ExamModule = {
   questions: [],      // 시험 문제 배열
   currentIndex: 0,    // 현재 문제 인덱스
@@ -7,12 +8,13 @@ const ExamModule = {
   targetWords: 60,
   isActive: false,    // 시험 진행 중 여부
   sessionId: null,    // 저장된 세션 ID
+  questionStartTime: null, // 문제별 시작 시간 (실제 소요 시간 계산용)
 
   /**
    * 모의시험 화면 렌더링
    */
   async render(container) {
-    container.innerHTML = '';
+    container.replaceChildren();
 
     // 시험 진행 중이면 시험 화면 표시
     if (this.isActive && this.questions.length > 0) {
@@ -57,11 +59,25 @@ const ExamModule = {
 
       const topicCard = document.createElement('div');
       topicCard.className = 'exam-info-card';
-      topicCard.innerHTML = `<div class="exam-info-label">선택 주제</div><div class="exam-info-value">${hasTopics ? selectedTopics.length + '개' : '미설정'}</div>`;
+      const topicLabel = document.createElement('div');
+      topicLabel.className = 'exam-info-label';
+      topicLabel.textContent = '선택 주제';
+      const topicValue = document.createElement('div');
+      topicValue.className = 'exam-info-value';
+      topicValue.textContent = hasTopics ? selectedTopics.length + '개' : '미설정';
+      topicCard.appendChild(topicLabel);
+      topicCard.appendChild(topicValue);
 
       const levelCard = document.createElement('div');
       levelCard.className = 'exam-info-card';
-      levelCard.innerHTML = `<div class="exam-info-label">목표 레벨</div><div class="exam-info-value">${settings.target_level || '미설정'}</div>`;
+      const levelLabel = document.createElement('div');
+      levelLabel.className = 'exam-info-label';
+      levelLabel.textContent = '목표 레벨';
+      const levelValue = document.createElement('div');
+      levelValue.className = 'exam-info-value';
+      levelValue.textContent = settings.target_level || '미설정';
+      levelCard.appendChild(levelLabel);
+      levelCard.appendChild(levelValue);
 
       infoCards.appendChild(topicCard);
       infoCards.appendChild(levelCard);
@@ -130,7 +146,7 @@ const ExamModule = {
    * 시험 문제 렌더링
    */
   renderExamQuestion(container) {
-    container.innerHTML = '';
+    container.replaceChildren();
 
     const q = this.questions[this.currentIndex];
     if (!q) {
@@ -138,12 +154,23 @@ const ExamModule = {
       return;
     }
 
+    // 문제 시작 시간 기록
+    this.questionStartTime = Date.now();
+
     const timeLimit = q.time_limit || 90;
 
     // 문제 번호
     const progress = document.createElement('div');
     progress.className = 'exam-progress';
-    progress.innerHTML = `<div class="exam-question-num">문제 <strong>${this.currentIndex + 1}</strong> / ${this.questions.length}</div>`;
+    const questionNum = document.createElement('div');
+    questionNum.className = 'exam-question-num';
+    const numText = document.createTextNode('문제 ');
+    const numStrong = document.createElement('strong');
+    numStrong.textContent = this.currentIndex + 1;
+    questionNum.appendChild(numText);
+    questionNum.appendChild(numStrong);
+    questionNum.appendChild(document.createTextNode(' / ' + this.questions.length));
+    progress.appendChild(questionNum);
     container.appendChild(progress);
 
     // 질문 텍스트
@@ -152,13 +179,20 @@ const ExamModule = {
     questionText.textContent = q.question_text;
     container.appendChild(questionText);
 
-    // 타이머 영역
+    // 타이머 정보
     const timerInfo = document.createElement('div');
     timerInfo.className = 'exam-timer-info';
     timerInfo.id = 'exam-timer-info';
-    timerInfo.innerHTML = `<span>${q.type === 'roleplay' ? '롤플레이' : '서베이'} (${timeLimit}초)</span><span id="timer-remaining">${timeLimit}초</span>`;
+    const timerType = document.createElement('span');
+    timerType.textContent = (q.type === 'roleplay' ? '롤플레이' : '서베이') + ' (' + timeLimit + '초)';
+    const timerRemaining = document.createElement('span');
+    timerRemaining.id = 'timer-remaining';
+    timerRemaining.textContent = timeLimit + '초';
+    timerInfo.appendChild(timerType);
+    timerInfo.appendChild(timerRemaining);
     container.appendChild(timerInfo);
 
+    // 타이머 프로그레스 바
     const timerBar = document.createElement('div');
     timerBar.className = 'progress-bar exam-timer-bar';
     const timerFill = document.createElement('div');
@@ -179,9 +213,15 @@ const ExamModule = {
     const wordInfo = document.createElement('div');
     wordInfo.className = 'exam-word-info';
     wordInfo.id = 'exam-word-info';
-    wordInfo.innerHTML = `<span>0 단어</span><span>0/${this.targetWords} 단어 — 0% 달성</span>`;
+    const wordCount = document.createElement('span');
+    wordCount.textContent = '0 단어';
+    const wordTarget = document.createElement('span');
+    wordTarget.textContent = '0/' + this.targetWords + ' 단어 — 0% 달성';
+    wordInfo.appendChild(wordCount);
+    wordInfo.appendChild(wordTarget);
     container.appendChild(wordInfo);
 
+    // 단어 수 프로그레스 바
     const wordProgress = document.createElement('div');
     wordProgress.className = 'progress-bar exam-word-progress';
     const wordFill = document.createElement('div');
@@ -202,24 +242,32 @@ const ExamModule = {
     container.appendChild(actions);
 
     // 실시간 단어 수 카운트
+    const targetWords = this.targetWords;
     textarea.addEventListener('input', () => {
       const wc = WordCountUtil.count(textarea.value);
-      const pct = Math.min(100, Math.round(wc / this.targetWords * 100));
+      const pct = Math.min(100, Math.round(wc / targetWords * 100));
       const wordInfoEl = document.getElementById('exam-word-info');
+      if (wordInfoEl) {
+        wordInfoEl.replaceChildren();
+        const s1 = document.createElement('span');
+        s1.textContent = wc + ' 단어';
+        const s2 = document.createElement('span');
+        s2.textContent = wc + '/' + targetWords + ' 단어 — ' + pct + '% 달성';
+        wordInfoEl.appendChild(s1);
+        wordInfoEl.appendChild(s2);
+      }
       const wordFillEl = document.getElementById('word-fill');
-      if (wordInfoEl) wordInfoEl.innerHTML = `<span>${wc} 단어</span><span>${wc}/${this.targetWords} 단어 — ${pct}% 달성</span>`;
-      if (wordFillEl) wordFillEl.style.width = `${pct}%`;
+      if (wordFillEl) wordFillEl.style.width = pct + '%';
     });
 
     // 답변 타이머 시작
-    const startTime = Date.now();
     TimerUtil.startAnswerTimer(timeLimit,
       (remaining, total) => {
         const remainEl = document.getElementById('timer-remaining');
         const fillEl = document.getElementById('timer-fill');
         const infoEl = document.getElementById('exam-timer-info');
-        if (remainEl) remainEl.textContent = `${remaining}초`;
-        if (fillEl) fillEl.style.width = `${remaining / total * 100}%`;
+        if (remainEl) remainEl.textContent = remaining + '초';
+        if (fillEl) fillEl.style.width = (remaining / total * 100) + '%';
         if (remaining <= 30) {
           if (fillEl) fillEl.classList.add('warning');
           if (infoEl) infoEl.classList.add('warning');
@@ -241,12 +289,15 @@ const ExamModule = {
     const wordCount = WordCountUtil.count(answerText);
     const q = this.questions[this.currentIndex];
 
+    // 실제 소요 시간 계산
+    const elapsed = Math.round((Date.now() - this.questionStartTime) / 1000);
+
     this.answers.push({
       question_id: q.id,
       question_text: q.question_text,
       answer_text: answerText,
       word_count: wordCount,
-      time_spent: q.time_limit || 90,
+      time_spent: elapsed,
       type: q.type
     });
 
@@ -266,7 +317,7 @@ const ExamModule = {
     this.isActive = false;
     TimerUtil.stop();
 
-    container.innerHTML = '';
+    container.replaceChildren();
 
     const resultDiv = document.createElement('div');
     resultDiv.className = 'exam-result';
@@ -283,7 +334,14 @@ const ExamModule = {
 
       const header = document.createElement('div');
       header.className = 'result-q-header';
-      header.innerHTML = `<span class="result-q-num">문제 ${idx + 1}</span><span class="result-q-stats">${a.word_count}단어 · ${a.time_spent}초</span>`;
+      const qNum = document.createElement('span');
+      qNum.className = 'result-q-num';
+      qNum.textContent = '문제 ' + (idx + 1);
+      const qStats = document.createElement('span');
+      qStats.className = 'result-q-stats';
+      qStats.textContent = a.word_count + '단어 · ' + a.time_spent + '초';
+      header.appendChild(qNum);
+      header.appendChild(qStats);
 
       const qText = document.createElement('div');
       qText.className = 'result-q-text';

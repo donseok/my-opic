@@ -1,4 +1,5 @@
 // 대시보드 모듈 (FR-027~030)
+// 학습 통계, 점수 추이 차트, 레벨 진행률, 시험 이력
 const DashboardModule = {
   chart: null, // Chart.js 인스턴스
 
@@ -6,7 +7,7 @@ const DashboardModule = {
    * 대시보드 화면 렌더링
    */
   async render(container) {
-    container.innerHTML = '';
+    container.replaceChildren();
 
     const title = document.createElement('h2');
     title.className = 'section-title';
@@ -21,11 +22,17 @@ const DashboardModule = {
       ]);
 
       if (stats.total_exams === 0) {
-        container.innerHTML += `
-          <div class="empty-state">
-            <div class="empty-state-icon">📊</div>
-            <p class="empty-state-text">아직 학습 데이터가 없습니다.<br>모의시험을 진행한 후 대시보드를 확인하세요.</p>
-          </div>`;
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        const emptyIcon = document.createElement('div');
+        emptyIcon.className = 'empty-state-icon';
+        emptyIcon.textContent = '📊';
+        const emptyText = document.createElement('p');
+        emptyText.className = 'empty-state-text';
+        emptyText.textContent = '아직 학습 데이터가 없습니다. 모의시험을 진행한 후 대시보드를 확인하세요.';
+        empty.appendChild(emptyIcon);
+        empty.appendChild(emptyText);
+        container.appendChild(empty);
         return;
       }
 
@@ -43,7 +50,14 @@ const DashboardModule = {
       statItems.forEach(s => {
         const card = document.createElement('div');
         card.className = 'stat-card';
-        card.innerHTML = `<div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div>`;
+        const valDiv = document.createElement('div');
+        valDiv.className = 'stat-value';
+        valDiv.textContent = s.value;
+        const lblDiv = document.createElement('div');
+        lblDiv.className = 'stat-label';
+        lblDiv.textContent = s.label;
+        card.appendChild(valDiv);
+        card.appendChild(lblDiv);
         statsGrid.appendChild(card);
       });
 
@@ -53,7 +67,10 @@ const DashboardModule = {
       if (trends.length > 0) {
         const chartSection = document.createElement('div');
         chartSection.className = 'dashboard-chart';
-        chartSection.innerHTML = '<div class="chart-title">📈 점수 추이</div>';
+        const chartTitle = document.createElement('div');
+        chartTitle.className = 'chart-title';
+        chartTitle.textContent = '📈 점수 추이';
+        chartSection.appendChild(chartTitle);
 
         const chartContainer = document.createElement('div');
         chartContainer.className = 'chart-container';
@@ -70,11 +87,13 @@ const DashboardModule = {
       // 레벨 진행률
       const levelProgress = document.createElement('div');
       levelProgress.className = 'dashboard-level-progress';
-      levelProgress.innerHTML = '<div class="chart-title">🎯 레벨 진행률</div>';
+      const levelTitle = document.createElement('div');
+      levelTitle.className = 'chart-title';
+      levelTitle.textContent = '🎯 레벨 진행률';
+      levelProgress.appendChild(levelTitle);
 
       const allLevels = ['NL', 'NM', 'NH', 'IL', 'IM1', 'IM2', 'IM3', 'IH', 'AL'];
       const currentIdx = allLevels.indexOf(stats.current_level);
-      const targetIdx = allLevels.indexOf(stats.target_level);
       const predictedIdx = allLevels.indexOf(stats.latest_level);
 
       const progressBar = document.createElement('div');
@@ -91,13 +110,24 @@ const DashboardModule = {
 
       levelProgress.appendChild(progressBar);
 
+      // 레벨 라벨
       const labels = document.createElement('div');
       labels.className = 'level-progress-labels';
-      labels.innerHTML = `
-        <span>현재: ${stats.current_level || '-'}</span>
-        <span style="color: var(--warning)">예상: ${stats.latest_level || '-'}</span>
-        <span style="color: var(--accent)">목표: ${stats.target_level || '-'}</span>
-      `;
+
+      const currentLabel = document.createElement('span');
+      currentLabel.textContent = '현재: ' + (stats.current_level || '-');
+
+      const predictedLabel = document.createElement('span');
+      predictedLabel.style.color = 'var(--warning)';
+      predictedLabel.textContent = '예상: ' + (stats.latest_level || '-');
+
+      const targetLabel = document.createElement('span');
+      targetLabel.style.color = 'var(--accent)';
+      targetLabel.textContent = '목표: ' + (stats.target_level || '-');
+
+      labels.appendChild(currentLabel);
+      labels.appendChild(predictedLabel);
+      labels.appendChild(targetLabel);
       levelProgress.appendChild(labels);
       container.appendChild(levelProgress);
 
@@ -105,23 +135,36 @@ const DashboardModule = {
       if (sessions.length > 0) {
         const historySection = document.createElement('div');
         historySection.className = 'dashboard-history';
-        historySection.innerHTML = '<div class="chart-title">📋 최근 시험 이력</div>';
+        const historyTitle = document.createElement('div');
+        historyTitle.className = 'chart-title';
+        historyTitle.textContent = '📋 최근 시험 이력';
+        historySection.appendChild(historyTitle);
 
         sessions.slice(0, 10).forEach(s => {
           const item = document.createElement('div');
           item.className = 'history-item';
 
           const date = new Date(s.started_at).toLocaleDateString('ko-KR');
-          item.innerHTML = `
-            <span class="history-date">${date}</span>
-            <span class="history-level">${s.predicted_level || '-'}</span>
-            <span class="history-scores">문법 ${s.grammar_score || '-'} · 유창성 ${s.fluency_score || '-'} · 어휘 ${s.vocabulary_score || '-'}</span>
-          `;
+          const dateSpan = document.createElement('span');
+          dateSpan.className = 'history-date';
+          dateSpan.textContent = date;
+
+          const levelSpan = document.createElement('span');
+          levelSpan.className = 'history-level';
+          levelSpan.textContent = s.predicted_level || '-';
+
+          const scoresSpan = document.createElement('span');
+          scoresSpan.className = 'history-scores';
+          scoresSpan.textContent = '문법 ' + (s.grammar_score || '-') + ' · 유창성 ' + (s.fluency_score || '-') + ' · 어휘 ' + (s.vocabulary_score || '-');
+
+          item.appendChild(dateSpan);
+          item.appendChild(levelSpan);
+          item.appendChild(scoresSpan);
 
           item.addEventListener('click', () => {
             if (s.predicted_level) {
               FeedbackModule.lastSessionId = s.id;
-              apiGet(`/feedback/${s.id}`).then(fb => {
+              apiGet('/feedback/' + s.id).then(fb => {
                 FeedbackModule.lastFeedback = fb;
                 window.location.hash = '#feedback';
               }).catch(() => {});
@@ -135,7 +178,13 @@ const DashboardModule = {
       }
 
     } catch (err) {
-      container.innerHTML += '<div class="empty-state"><p class="empty-state-text">데이터를 불러올 수 없습니다.</p></div>';
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      const p = document.createElement('p');
+      p.className = 'empty-state-text';
+      p.textContent = '데이터를 불러올 수 없습니다.';
+      empty.appendChild(p);
+      container.appendChild(empty);
     }
   },
 
@@ -147,7 +196,7 @@ const DashboardModule = {
       this.chart.destroy();
     }
 
-    const labels = trends.map((t, idx) => `시험 ${idx + 1}`);
+    const labels = trends.map((t, idx) => '시험 ' + (idx + 1));
 
     this.chart = new Chart(canvas, {
       type: 'line',

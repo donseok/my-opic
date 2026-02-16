@@ -1,4 +1,5 @@
 // AI 피드백 모듈 (FR-022~026)
+// Gemini API 기반 답변 평가, 결과 시각화
 const FeedbackModule = {
   lastSessionId: null,
   lastFeedback: null,
@@ -8,7 +9,7 @@ const FeedbackModule = {
    * AI 피드백 화면 렌더링
    */
   async render(container) {
-    container.innerHTML = '';
+    container.replaceChildren();
 
     const title = document.createElement('h2');
     title.className = 'section-title';
@@ -17,11 +18,16 @@ const FeedbackModule = {
 
     // 로딩 중
     if (this.isLoading) {
-      container.innerHTML += `
-        <div class="feedback-loading">
-          <div class="spinner"></div>
-          <p class="feedback-loading-text">AI가 답변을 분석하고 있습니다...</p>
-        </div>`;
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'feedback-loading';
+      const spinner = document.createElement('div');
+      spinner.className = 'spinner';
+      const loadingText = document.createElement('p');
+      loadingText.className = 'feedback-loading-text';
+      loadingText.textContent = 'AI가 답변을 분석하고 있습니다...';
+      loadingDiv.appendChild(spinner);
+      loadingDiv.appendChild(loadingText);
+      container.appendChild(loadingDiv);
       return;
     }
 
@@ -38,7 +44,7 @@ const FeedbackModule = {
         const latestSession = sessions[0];
         if (latestSession.predicted_level) {
           // 이미 피드백이 있는 경우
-          const feedback = await apiGet(`/feedback/${latestSession.id}`);
+          const feedback = await apiGet('/feedback/' + latestSession.id);
           this.lastFeedback = feedback;
           this.lastSessionId = latestSession.id;
           this.renderFeedbackResult(container, feedback);
@@ -50,11 +56,17 @@ const FeedbackModule = {
     }
 
     // 피드백 없음
-    container.innerHTML += `
-      <div class="empty-state">
-        <div class="empty-state-icon">🤖</div>
-        <p class="empty-state-text">아직 AI 피드백이 없습니다.<br>모의시험을 완료한 후 피드백을 받을 수 있습니다.</p>
-      </div>`;
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    const emptyIcon = document.createElement('div');
+    emptyIcon.className = 'empty-state-icon';
+    emptyIcon.textContent = '🤖';
+    const emptyText = document.createElement('p');
+    emptyText.className = 'empty-state-text';
+    emptyText.textContent = '아직 AI 피드백이 없습니다. 모의시험을 완료한 후 피드백을 받을 수 있습니다.';
+    empty.appendChild(emptyIcon);
+    empty.appendChild(emptyText);
+    container.appendChild(empty);
   },
 
   /**
@@ -87,25 +99,31 @@ const FeedbackModule = {
       this.isLoading = false;
 
       if (container) {
-        container.innerHTML = '';
+        container.replaceChildren();
         const title = document.createElement('h2');
         title.className = 'section-title';
         title.textContent = 'AI 피드백';
         container.appendChild(title);
 
-        // 에러 메시지 표시
+        // 에러 메시지 분류
         let errorMsg = '서버 오류가 발생했습니다.';
         if (err.status === 429) errorMsg = '요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.';
         else if (err.status === 400) errorMsg = err.message || '잘못된 요청입니다.';
-        else if (err.message?.includes('네트워크') || err.message?.includes('fetch')) errorMsg = '인터넷 연결을 확인해주세요.';
+        else if (err.message && (err.message.includes('네트워크') || err.message.includes('fetch'))) errorMsg = '인터넷 연결을 확인해주세요.';
         else if (err.message) errorMsg = err.message;
 
         const errorDiv = document.createElement('div');
         errorDiv.className = 'feedback-error';
-        errorDiv.innerHTML = `
-          <div class="feedback-error-icon">⚠️</div>
-          <p class="feedback-error-message">${errorMsg}</p>
-        `;
+
+        const errorIcon = document.createElement('div');
+        errorIcon.className = 'feedback-error-icon';
+        errorIcon.textContent = '⚠️';
+        errorDiv.appendChild(errorIcon);
+
+        const errorP = document.createElement('p');
+        errorP.className = 'feedback-error-message';
+        errorP.textContent = errorMsg;
+        errorDiv.appendChild(errorP);
 
         const retryBtn = document.createElement('button');
         retryBtn.className = 'btn btn-primary';
@@ -125,10 +143,14 @@ const FeedbackModule = {
     // 예상 등급 뱃지
     const gradeDiv = document.createElement('div');
     gradeDiv.className = 'feedback-grade';
-    gradeDiv.innerHTML = `
-      <div class="grade-badge">${feedback.predicted_level}</div>
-      <div class="grade-label">AI 예상 등급</div>
-    `;
+    const gradeBadge = document.createElement('div');
+    gradeBadge.className = 'grade-badge';
+    gradeBadge.textContent = feedback.predicted_level;
+    const gradeLabel = document.createElement('div');
+    gradeLabel.className = 'grade-label';
+    gradeLabel.textContent = 'AI 예상 등급';
+    gradeDiv.appendChild(gradeBadge);
+    gradeDiv.appendChild(gradeLabel);
     container.appendChild(gradeDiv);
 
     // 점수 카드
@@ -143,12 +165,26 @@ const FeedbackModule = {
 
     scoreData.forEach(s => {
       const card = document.createElement('div');
-      card.className = `score-card ${s.cls}`;
-      card.innerHTML = `
-        <div class="score-label">${s.label}</div>
-        <div class="score-value">${s.value}</div>
-        <div class="score-bar"><div class="score-bar-fill" style="width: ${s.value}%"></div></div>
-      `;
+      card.className = 'score-card ' + s.cls;
+
+      const scoreLabel = document.createElement('div');
+      scoreLabel.className = 'score-label';
+      scoreLabel.textContent = s.label;
+
+      const scoreValue = document.createElement('div');
+      scoreValue.className = 'score-value';
+      scoreValue.textContent = s.value;
+
+      const scoreBar = document.createElement('div');
+      scoreBar.className = 'score-bar';
+      const scoreBarFill = document.createElement('div');
+      scoreBarFill.className = 'score-bar-fill';
+      scoreBarFill.style.width = s.value + '%';
+      scoreBar.appendChild(scoreBarFill);
+
+      card.appendChild(scoreLabel);
+      card.appendChild(scoreValue);
+      card.appendChild(scoreBar);
       scores.appendChild(card);
     });
 
@@ -157,7 +193,11 @@ const FeedbackModule = {
     // 잘한 점
     const strengthsDiv = document.createElement('div');
     strengthsDiv.className = 'feedback-cards';
-    strengthsDiv.innerHTML = '<div class="feedback-card-title">✅ 잘한 점</div>';
+    const strengthsTitle = document.createElement('div');
+    strengthsTitle.className = 'feedback-card-title';
+    strengthsTitle.textContent = '✅ 잘한 점';
+    strengthsDiv.appendChild(strengthsTitle);
+
     const strengthsList = document.createElement('div');
     strengthsList.className = 'feedback-card-list';
     const strengths = Array.isArray(feedback.strengths) ? feedback.strengths : JSON.parse(feedback.strengths || '[]');
@@ -173,7 +213,11 @@ const FeedbackModule = {
     // 개선할 점
     const improvDiv = document.createElement('div');
     improvDiv.className = 'feedback-cards';
-    improvDiv.innerHTML = '<div class="feedback-card-title">💡 개선할 점</div>';
+    const improvTitle = document.createElement('div');
+    improvTitle.className = 'feedback-card-title';
+    improvTitle.textContent = '💡 개선할 점';
+    improvDiv.appendChild(improvTitle);
+
     const improvList = document.createElement('div');
     improvList.className = 'feedback-card-list';
     const improvements = Array.isArray(feedback.improvements) ? feedback.improvements : JSON.parse(feedback.improvements || '[]');
@@ -191,16 +235,42 @@ const FeedbackModule = {
       const settings = await apiGet('/settings');
       const pathDiv = document.createElement('div');
       pathDiv.className = 'feedback-level-path';
-      pathDiv.innerHTML = `
-        <div class="level-path-title">레벨 진행 경로</div>
-        <div class="level-path-row">
-          <span class="level-path-item level-path-current">${settings.current_level || '?'}</span>
-          <span class="level-path-arrow">→</span>
-          <span class="level-path-item level-path-predicted">${feedback.predicted_level}</span>
-          <span class="level-path-arrow">→</span>
-          <span class="level-path-item level-path-target">${settings.target_level || '?'}</span>
-        </div>
-      `;
+
+      const pathTitle = document.createElement('div');
+      pathTitle.className = 'level-path-title';
+      pathTitle.textContent = '레벨 진행 경로';
+      pathDiv.appendChild(pathTitle);
+
+      const pathRow = document.createElement('div');
+      pathRow.className = 'level-path-row';
+
+      const currentSpan = document.createElement('span');
+      currentSpan.className = 'level-path-item level-path-current';
+      currentSpan.textContent = settings.current_level || '?';
+
+      const arrow1 = document.createElement('span');
+      arrow1.className = 'level-path-arrow';
+      arrow1.textContent = '→';
+
+      const predictedSpan = document.createElement('span');
+      predictedSpan.className = 'level-path-item level-path-predicted';
+      predictedSpan.textContent = feedback.predicted_level;
+
+      const arrow2 = document.createElement('span');
+      arrow2.className = 'level-path-arrow';
+      arrow2.textContent = '→';
+
+      const targetSpan = document.createElement('span');
+      targetSpan.className = 'level-path-item level-path-target';
+      targetSpan.textContent = settings.target_level || '?';
+
+      pathRow.appendChild(currentSpan);
+      pathRow.appendChild(arrow1);
+      pathRow.appendChild(predictedSpan);
+      pathRow.appendChild(arrow2);
+      pathRow.appendChild(targetSpan);
+      pathDiv.appendChild(pathRow);
+
       container.appendChild(pathDiv);
     } catch (err) {
       // 설정 로드 실패 시 경로 표시 생략
