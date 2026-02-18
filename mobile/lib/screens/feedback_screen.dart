@@ -4,8 +4,7 @@ import '../models/feedback.dart' as fb;
 import '../models/exam_session.dart';
 import '../main.dart';
 
-/// AI 피드백 화면 (FR-022~026)
-/// Gemini 평가, 점수 시각화, 강약점 카드
+/// AI 피드백 화면 — Gemini 평가, 5축 점수 시각화, 강약점 카드
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});
 
@@ -39,26 +38,19 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     }
   }
 
-  /// 세션 선택 → 기존 피드백 확인 또는 새로 요청
   Future<void> _selectSession(ExamSession session) async {
     setState(() { _selectedSession = session; _feedback = null; });
-
-    // 이미 피드백이 있는지 확인
     try {
       final existing = await ApiService.get('/feedback/${session.id}');
       setState(() => _feedback = fb.Feedback.fromJson(existing));
-    } catch (_) {
-      // 없으면 무시 — 사용자가 "AI 피드백 받기" 버튼 클릭 시 요청
-    }
+    } catch (_) {}
   }
 
-  /// AI 피드백 요청
   Future<void> _requestFeedback() async {
     if (_selectedSession == null) return;
     setState(() { _evaluating = true; });
 
     try {
-      // 세션 상세 조회 (답변 포함)
       final sessionDetail = await ApiService.get('/exam/sessions/${_selectedSession!.id}');
       final answers = (sessionDetail['answers'] as List?)?.map((a) => {
         'question_text': a['question_text'] ?? '',
@@ -125,7 +117,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(color: theme.colorScheme.outline),
             ),
             child: DropdownButtonHideUnderline(
@@ -173,25 +165,20 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             // 예상 등급 뱃지
             Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      theme.colorScheme.primary.withValues(alpha: 0.2),
-                      theme.colorScheme.primary.withValues(alpha: 0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: theme.colorScheme.primary),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: theme.colorScheme.primary, width: 2),
                 ),
                 child: Column(
                   children: [
-                    Text('예상 등급', style: theme.textTheme.bodySmall),
+                    Text('AI 예상 등급', style: theme.textTheme.bodySmall),
                     const SizedBox(height: 4),
                     Text(
                       _feedback!.predictedLevel,
                       style: TextStyle(
-                        fontSize: 36,
+                        fontSize: 32,
                         fontWeight: FontWeight.w800,
                         color: theme.colorScheme.primary,
                       ),
@@ -201,24 +188,33 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               ),
             ),
 
-            // 점수 3개
+            // 5축 점수
             const SizedBox(height: 20),
             Row(
               children: [
-                Expanded(child: _ScoreCard(label: '문법', score: _feedback!.grammarScore, color: const Color(0xFF818CF8))),
-                const SizedBox(width: 8),
+                Expanded(child: _ScoreCard(label: '문법', score: _feedback!.grammarScore, color: const Color(0xFF2563EB))),
+                const SizedBox(width: 6),
                 Expanded(child: _ScoreCard(label: '유창성', score: _feedback!.fluencyScore, color: theme.colorScheme.primary)),
+                const SizedBox(width: 6),
+                Expanded(child: _ScoreCard(label: '어휘', score: _feedback!.vocabularyScore, color: const Color(0xFF7C3AED))),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(child: _ScoreCard(label: '발음', score: _feedback!.pronunciationScore, color: const Color(0xFF059669))),
                 const SizedBox(width: 8),
-                Expanded(child: _ScoreCard(label: '어휘', score: _feedback!.vocabularyScore, color: colors.warning)),
+                Expanded(child: _ScoreCard(label: '구성력', score: _feedback!.organizationScore, color: colors.warning)),
               ],
             ),
 
             // 잘한 점
             const SizedBox(height: 20),
-            Text('✅ 잘한 점', style: theme.textTheme.titleMedium),
+            Text('잘한 점', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             ..._feedback!.strengths.map((s) => Card(
               margin: const EdgeInsets.only(bottom: 6),
+              color: colors.success.withValues(alpha: 0.04),
               child: ListTile(
                 leading: Icon(Icons.check_circle, color: colors.success, size: 20),
                 title: Text(s, style: const TextStyle(fontSize: 13)),
@@ -228,10 +224,11 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
             // 개선할 점
             const SizedBox(height: 12),
-            Text('💡 개선할 점', style: theme.textTheme.titleMedium),
+            Text('개선할 점', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             ..._feedback!.improvements.map((s) => Card(
               margin: const EdgeInsets.only(bottom: 6),
+              color: colors.warning.withValues(alpha: 0.04),
               child: ListTile(
                 leading: Icon(Icons.lightbulb_outline, color: colors.warning, size: 20),
                 title: Text(s, style: const TextStyle(fontSize: 13)),
@@ -272,7 +269,7 @@ class _ScoreCard extends StatelessWidget {
                     value: score / 100,
                     strokeWidth: 4,
                     valueColor: AlwaysStoppedAnimation(color),
-                    backgroundColor: theme.colorScheme.outline,
+                    backgroundColor: theme.colorScheme.outline.withValues(alpha: 0.3),
                   ),
                   Text(
                     '$score',

@@ -1,0 +1,253 @@
+/* 음성 녹음 관련 스타일 — 모던 리디자인 */
+
+.recorder-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+}
+
+/* 녹음 버튼 */
+.record-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid var(--border-color);
+  background: var(--bg-card);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px auto;
+  transition: all var(--transition-normal);
+  position: relative;
+}
+
+.record-btn::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transition: all var(--transition-normal);
+}
+
+.record-btn:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-glow);
+}
+
+.record-btn:hover::before {
+  border-color: rgba(2, 132, 199, 0.1);
+}
+
+.record-btn.recording {
+  border-color: var(--error);
+  background: rgba(239, 68, 68, 0.04);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.15);
+  animation: recordPulse 1.5s ease-in-out infinite;
+}
+
+.record-btn.recording::before {
+  border-color: rgba(239, 68, 68, 0.15);
+  animation: recordRing 1.5s ease-in-out infinite;
+}
+
+@keyframes recordPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+@keyframes recordRing {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.15); opacity: 0; }
+}
+
+.record-btn-inner {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--error);
+  transition: all var(--transition-normal);
+}
+
+.record-btn.recording .record-btn-inner {
+  border-radius: 6px;
+  width: 22px;
+  height: 22px;
+}
+
+.record-status {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 10px;
+  font-weight: 500;
+}
+
+.record-timer {
+  font-size: 22px;
+  font-weight: 800;
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 파형 시각화 */
+.waveform-container {
+  height: 64px;
+  margin: 16px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.waveform-bar {
+  width: 3px;
+  background: var(--gradient-accent);
+  border-radius: 2px;
+  transition: height 0.1s;
+  min-height: 4px;
+}
+
+/* 오디오 플레이어 */
+.audio-player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-btn);
+  margin-top: 14px;
+}
+
+.audio-play-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--gradient-accent);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+  transition: all var(--transition-normal);
+}
+
+.audio-play-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+}
+
+.audio-progress {
+  flex: 1;
+  height: 4px;
+  background: rgba(226, 232, 240, 0.6);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.audio-progress-fill {
+  height: 100%;
+  background: var(--gradient-accent);
+  border-radius: var(--radius-full);
+}
+
+.audio-duration {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+/* 음성 분석 결과 */
+.voice-analysis {
+  margin-top: 18px;
+  animation: slideUp 0.3s ease;
+}
+
+.voice-scores {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.voice-score-item {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-btn);
+  padding: 14px;
+  text-align: center;
+  transition: all var(--transition-normal);
+}
+
+.voice-score-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.voice-score-value {
+  font-size: 22px;
+  font-weight: 800;
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.voice-score-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+  font-weight: 500;
+}
+
+.voice-transcript {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-btn);
+  padding: 16px;
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.7;
+  margin-top: 14px;
+}
+
+.voice-transcript-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.voice-feedback-item {
+  padding: 12px 16px;
+  border-radius: var(--radius-btn);
+  background: var(--bg-secondary);
+  margin-top: 8px;
+  transition: all var(--transition-normal);
+}
+
+.voice-feedback-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.voice-feedback-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.voice-feedback-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}

@@ -46,6 +46,38 @@ class ApiService {
       throw ApiException(response.statusCode, response.body);
     }
   }
+
+  /// DELETE 요청
+  static Future<dynamic> delete(String path) async {
+    final response = await http.delete(
+      Uri.parse('$_baseUrl$path'),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw ApiException(response.statusCode, response.body);
+    }
+  }
+
+  /// POST (대용량 - 10MB base64 오디오 등)
+  static Future<dynamic> postLarge(String path, Map<String, dynamic> body) async {
+    final client = http.Client();
+    try {
+      final response = await client.post(
+        Uri.parse('$_baseUrl$path'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      ).timeout(const Duration(seconds: 60));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw ApiException(response.statusCode, response.body);
+      }
+    } finally {
+      client.close();
+    }
+  }
 }
 
 /// API 에러 클래스

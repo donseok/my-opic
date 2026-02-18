@@ -160,7 +160,9 @@ const FeedbackModule = {
     const scoreData = [
       { label: '문법', value: feedback.grammar_score, cls: 'score-grammar' },
       { label: '유창성', value: feedback.fluency_score, cls: 'score-fluency' },
-      { label: '어휘', value: feedback.vocabulary_score, cls: 'score-vocab' }
+      { label: '어휘', value: feedback.vocabulary_score, cls: 'score-vocab' },
+      { label: '발음', value: feedback.pronunciation_score || 0, cls: 'score-pronunciation' },
+      { label: '구성력', value: feedback.content_organization_score || 0, cls: 'score-organization' }
     ];
 
     scoreData.forEach(s => {

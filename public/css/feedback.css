@@ -1,45 +1,69 @@
-/* AI 피드백 화면 스타일 */
+/* AI 피드백 화면 스타일 — 모던 리디자인 */
 
 .feedback-loading {
   text-align: center;
-  padding: 40px;
+  padding: 48px;
+  animation: fadeIn 0.3s ease;
 }
 
 .feedback-loading-text {
   color: var(--text-secondary);
-  margin-top: 12px;
+  margin-top: 14px;
   font-size: 14px;
+  font-weight: 500;
 }
 
 /* 예상 등급 뱃지 */
 .feedback-grade {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  animation: scaleIn 0.4s ease;
 }
 
 .grade-badge {
   display: inline-block;
-  padding: 16px 32px;
-  background: rgba(45, 212, 191, 0.12);
+  padding: 18px 36px;
+  background: var(--gradient-accent-soft);
   border: 2px solid var(--accent);
-  border-radius: 20px;
-  font-size: 32px;
+  border-radius: var(--radius-xl);
+  font-size: 36px;
   font-weight: 800;
-  color: var(--accent);
+  background-image: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 8px;
+  position: relative;
+}
+
+.grade-badge::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--accent);
+  background: var(--gradient-accent-soft);
+  z-index: -1;
 }
 
 .grade-label {
   font-size: 14px;
   color: var(--text-secondary);
+  font-weight: 500;
 }
 
 /* 점수 게이지 */
 .feedback-scores {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 400px) {
+  .feedback-scores {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .score-card {
@@ -48,42 +72,58 @@
   border-radius: var(--radius-card);
   padding: 16px;
   text-align: center;
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.score-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .score-label {
   font-size: 12px;
   color: var(--text-secondary);
   margin-bottom: 8px;
+  font-weight: 600;
 }
 
 .score-value {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 4px;
+  font-size: 30px;
+  font-weight: 800;
+  margin-bottom: 6px;
 }
 
 .score-bar {
   width: 100%;
   height: 6px;
-  background: var(--border-color);
-  border-radius: 3px;
+  background: rgba(226, 232, 240, 0.5);
+  border-radius: var(--radius-full);
   overflow: hidden;
 }
 
 .score-bar-fill {
   height: 100%;
-  border-radius: 3px;
-  transition: width 0.5s ease;
+  border-radius: var(--radius-full);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.score-grammar .score-value { color: #60A5FA; }
-.score-grammar .score-bar-fill { background: #60A5FA; }
+.score-grammar .score-value { color: #2563EB; }
+.score-grammar .score-bar-fill { background: linear-gradient(90deg, #2563EB, #3B82F6); }
 
 .score-fluency .score-value { color: var(--accent); }
-.score-fluency .score-bar-fill { background: var(--accent); }
+.score-fluency .score-bar-fill { background: var(--gradient-accent); }
 
-.score-vocab .score-value { color: #A78BFA; }
-.score-vocab .score-bar-fill { background: #A78BFA; }
+.score-vocab .score-value { color: #7C3AED; }
+.score-vocab .score-bar-fill { background: linear-gradient(90deg, #7C3AED, #8B5CF6); }
+
+.score-pronunciation .score-value { color: #059669; }
+.score-pronunciation .score-bar-fill { background: linear-gradient(90deg, #059669, #10B981); }
+
+.score-organization .score-value { color: #D97706; }
+.score-organization .score-bar-fill { background: linear-gradient(90deg, #D97706, #F59E0B); }
 
 /* 잘한 점 / 개선할 점 */
 .feedback-cards {
@@ -92,7 +132,7 @@
 
 .feedback-card-title {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 10px;
   display: flex;
   align-items: center;
@@ -103,24 +143,29 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .feedback-card-item {
-  padding: 12px 14px;
+  padding: 14px 16px;
   border-radius: var(--radius-btn);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
+  transition: all var(--transition-normal);
+}
+
+.feedback-card-item:hover {
+  transform: translateX(4px);
 }
 
 .feedback-strength {
-  background: rgba(34, 197, 94, 0.1);
+  background: var(--success-bg);
   border-left: 3px solid var(--success);
   color: var(--text-primary);
 }
 
 .feedback-improvement {
-  background: rgba(251, 191, 36, 0.1);
+  background: var(--warning-bg);
   border-left: 3px solid var(--warning);
   color: var(--text-primary);
 }
@@ -130,44 +175,49 @@
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
-  padding: 20px;
+  padding: 24px;
   text-align: center;
+  box-shadow: var(--shadow-card);
 }
 
 .level-path-title {
   font-size: 14px;
   color: var(--text-secondary);
-  margin-bottom: 16px;
+  margin-bottom: 18px;
+  font-weight: 500;
 }
 
 .level-path-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .level-path-item {
-  padding: 10px 18px;
+  padding: 10px 20px;
   border-radius: var(--radius-badge);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 800;
+  transition: all var(--transition-normal);
 }
 
 .level-path-current {
-  background: rgba(148, 163, 184, 0.2);
+  background: rgba(148, 163, 184, 0.12);
   color: var(--text-secondary);
 }
 
 .level-path-predicted {
-  background: rgba(251, 191, 36, 0.15);
+  background: var(--warning-bg);
   color: var(--warning);
-  border: 1px solid var(--warning);
+  border: 1.5px solid var(--warning);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
 }
 
 .level-path-target {
-  background: rgba(45, 212, 191, 0.15);
+  background: rgba(2, 132, 199, 0.08);
   color: var(--accent);
+  border: 1.5px solid rgba(2, 132, 199, 0.2);
 }
 
 .level-path-arrow {
@@ -178,17 +228,18 @@
 /* 에러 상태 */
 .feedback-error {
   text-align: center;
-  padding: 40px 20px;
+  padding: 48px 20px;
+  animation: fadeIn 0.3s ease;
 }
 
 .feedback-error-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
+  font-size: 56px;
+  margin-bottom: 16px;
 }
 
 .feedback-error-message {
   font-size: 15px;
   color: var(--text-secondary);
-  margin-bottom: 16px;
-  line-height: 1.6;
+  margin-bottom: 20px;
+  line-height: 1.7;
 }

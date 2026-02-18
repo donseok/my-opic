@@ -1,0 +1,224 @@
+/* SRS 복습 화면 스타일 — 모던 리디자인 */
+
+.srs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+/* SRS 통계 */
+.srs-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.srs-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 18px;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+}
+
+.srs-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.srs-stat-value {
+  font-size: 26px;
+  font-weight: 800;
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.srs-stat-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* 리뷰 카드 */
+.srs-review-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  margin-bottom: 20px;
+  text-align: center;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.srs-review-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-accent-soft);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.srs-review-card:hover {
+  box-shadow: var(--shadow-elevated);
+  transform: translateY(-3px);
+}
+
+.srs-review-card:hover::after {
+  opacity: 1;
+}
+
+.srs-review-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.srs-card-front {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.srs-card-back {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-subtle);
+  width: 100%;
+  animation: fadeIn 0.3s ease;
+}
+
+.srs-card-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 14px;
+  font-weight: 500;
+}
+
+/* 리뷰 품질 버튼 */
+.srs-quality-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.srs-quality-btn {
+  padding: 14px 8px;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-btn);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-align: center;
+}
+
+.srs-quality-btn:active {
+  transform: scale(0.96);
+}
+
+.srs-quality-btn.fail {
+  border-color: rgba(239, 68, 68, 0.3);
+  color: var(--error);
+}
+.srs-quality-btn.fail:hover {
+  background: var(--error-bg);
+  border-color: var(--error);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+}
+
+.srs-quality-btn.hard {
+  border-color: rgba(245, 158, 11, 0.3);
+  color: var(--warning);
+}
+.srs-quality-btn.hard:hover {
+  background: var(--warning-bg);
+  border-color: var(--warning);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+}
+
+.srs-quality-btn.good {
+  border-color: rgba(2, 132, 199, 0.3);
+  color: var(--accent);
+}
+.srs-quality-btn.good:hover {
+  background: rgba(2, 132, 199, 0.06);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
+}
+
+.srs-quality-btn.easy {
+  border-color: rgba(34, 197, 94, 0.3);
+  color: var(--success);
+}
+.srs-quality-btn.easy:hover {
+  background: var(--success-bg);
+  border-color: var(--success);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+}
+
+/* 리뷰 진행률 */
+.srs-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.srs-progress-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+/* 리뷰 완료 */
+.srs-complete {
+  text-align: center;
+  padding: 48px 20px;
+  animation: scaleIn 0.4s ease;
+}
+
+.srs-complete-icon {
+  font-size: 72px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.08));
+}
+
+.srs-complete-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  letter-spacing: -0.3px;
+}
+
+.srs-complete-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 300px;
+  margin: 0 auto;
+}

@@ -10,6 +10,8 @@ const ExamModule = {
   sessionId: null,    // 저장된 세션 ID
   questionStartTime: null, // 문제별 시작 시간 (실제 소요 시간 계산용)
   _navGuardBound: null,    // 네비게이션 가드 핸들러
+  _recordingData: null,    // 녹음 데이터 {base64, duration}
+  _recordingTimerInterval: null,
 
   /**
    * 모의시험 화면 렌더링
@@ -287,12 +289,84 @@ const ExamModule = {
     timerBar.appendChild(timerFill);
     container.appendChild(timerBar);
 
-    // 답변 입력
+    // 답변 모드 전환 (타이핑 / 녹음)
+    const modeToggle = document.createElement('div');
+    modeToggle.className = 'exam-mode-toggle';
+
+    const typeBtn = document.createElement('button');
+    typeBtn.className = 'mode-btn active';
+    typeBtn.textContent = '⌨️ 타이핑';
+    typeBtn.addEventListener('click', () => {
+      typeBtn.classList.add('active');
+      voiceBtn.classList.remove('active');
+      document.getElementById('exam-answer').classList.remove('hidden');
+      const recArea = document.getElementById('exam-recorder');
+      if (recArea) recArea.classList.add('hidden');
+    });
+
+    const voiceBtn = document.createElement('button');
+    voiceBtn.className = 'mode-btn';
+    voiceBtn.textContent = '🎙️ 음성 녹음';
+    voiceBtn.addEventListener('click', () => {
+      voiceBtn.classList.add('active');
+      typeBtn.classList.remove('active');
+      document.getElementById('exam-answer').classList.add('hidden');
+      const recArea = document.getElementById('exam-recorder');
+      if (recArea) recArea.classList.remove('hidden');
+      else this.renderRecorder(container);
+    });
+
+    modeToggle.appendChild(typeBtn);
+    modeToggle.appendChild(voiceBtn);
+    container.appendChild(modeToggle);
+
+    // 답변 입력 (타이핑)
     const textarea = document.createElement('textarea');
     textarea.className = 'exam-answer-area';
     textarea.id = 'exam-answer';
     textarea.placeholder = 'Write your answer in English...';
     container.appendChild(textarea);
+
+    // 음성 녹음 영역 (기본 숨김)
+    if (typeof RecorderUtil !== 'undefined' && RecorderUtil.isSupported()) {
+      const recorderDiv = document.createElement('div');
+      recorderDiv.id = 'exam-recorder';
+      recorderDiv.className = 'recorder-container hidden';
+
+      const recBtn = document.createElement('div');
+      recBtn.className = 'record-btn';
+      recBtn.id = 'exam-record-btn';
+      const recInner = document.createElement('div');
+      recInner.className = 'record-btn-inner';
+      recBtn.appendChild(recInner);
+      recorderDiv.appendChild(recBtn);
+
+      const recStatus = document.createElement('div');
+      recStatus.className = 'record-status';
+      recStatus.id = 'exam-record-status';
+      recStatus.textContent = '버튼을 눌러 녹음을 시작하세요';
+      recorderDiv.appendChild(recStatus);
+
+      const recTimer = document.createElement('div');
+      recTimer.className = 'record-timer';
+      recTimer.id = 'exam-record-timer';
+      recTimer.textContent = '00:00';
+      recorderDiv.appendChild(recTimer);
+
+      const waveform = document.createElement('div');
+      waveform.className = 'waveform-container';
+      waveform.id = 'exam-waveform';
+      for (let i = 0; i < 30; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'waveform-bar';
+        bar.style.height = '4px';
+        waveform.appendChild(bar);
+      }
+      recorderDiv.appendChild(waveform);
+
+      recBtn.addEventListener('click', () => this.toggleRecording());
+      container.appendChild(recorderDiv);
+    }
 
     // 단어 수 + 달성률
     const wordInfo = document.createElement('div');
@@ -366,11 +440,70 @@ const ExamModule = {
   },
 
   /**
+   * 음성 녹음 토글
+   */
+  async toggleRecording() {
+    if (typeof RecorderUtil === 'undefined') return;
+
+    const btn = document.getElementById('exam-record-btn');
+    const status = document.getElementById('exam-record-status');
+    const timer = document.getElementById('exam-record-timer');
+    const waveform = document.getElementById('exam-waveform');
+
+    if (!RecorderUtil.isRecording) {
+      // 녹음 시작
+      try {
+        await RecorderUtil.start((freqData) => {
+          // 파형 시각화
+          if (waveform) {
+            const bars = waveform.querySelectorAll('.waveform-bar');
+            const step = Math.floor(freqData.length / bars.length);
+            bars.forEach((bar, i) => {
+              const value = freqData[i * step] || 0;
+              bar.style.height = Math.max(4, (value / 255) * 50) + 'px';
+            });
+          }
+          // 타이머 업데이트
+          if (timer) {
+            timer.textContent = RecorderUtil.formatTime(RecorderUtil.getDuration());
+          }
+        });
+        if (btn) btn.classList.add('recording');
+        if (status) status.textContent = '녹음 중... 다시 누르면 중지됩니다';
+        this._recordingData = null;
+      } catch (err) {
+        showToast('마이크 접근 권한이 필요합니다', 'error');
+      }
+    } else {
+      // 녹음 중지
+      try {
+        const data = await RecorderUtil.stop();
+        this._recordingData = data;
+        if (btn) btn.classList.remove('recording');
+        if (status) status.textContent = '녹음 완료 (' + RecorderUtil.formatTime(data.duration) + ')';
+        // 파형 리셋
+        if (waveform) {
+          waveform.querySelectorAll('.waveform-bar').forEach(bar => {
+            bar.style.height = '4px';
+          });
+        }
+      } catch (err) {
+        showToast('녹음 중지 오류', 'error');
+      }
+    }
+  },
+
+  /**
    * 다음 문제로 이동
    */
   nextQuestion(container) {
     TimerUtil.stop();
     TtsUtil.stop();
+
+    // 녹음 중이면 중지
+    if (typeof RecorderUtil !== 'undefined' && RecorderUtil.isRecording) {
+      RecorderUtil.stop().catch(() => {});
+    }
 
     // 현재 답변 저장
     const textarea = document.getElementById('exam-answer');
@@ -381,14 +514,25 @@ const ExamModule = {
     // 실제 소요 시간 계산
     const elapsed = Math.round((Date.now() - this.questionStartTime) / 1000);
 
-    this.answers.push({
+    const answerData = {
       question_id: q.id,
       question_text: q.question_text,
       answer_text: answerText,
       word_count: wordCount,
       time_spent: elapsed,
       type: q.type
-    });
+    };
+
+    // 녹음 데이터가 있으면 첨부
+    if (this._recordingData) {
+      answerData.voice_recording = {
+        audio_data: this._recordingData.base64,
+        duration: this._recordingData.duration
+      };
+      this._recordingData = null;
+    }
+
+    this.answers.push(answerData);
 
     this.currentIndex++;
 

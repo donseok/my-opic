@@ -303,3 +303,44 @@ INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key
 -- 직장의 장단점 (질문 49) - IM2
 INSERT OR IGNORE INTO answer_guides (id, question_id, level_code, structure, key_phrases, target_words) VALUES
 (42, 49, 'IM2', '1. 직장의 좋은 점 2~3개\n2. 아쉬운 점 1~2개\n3. 전체적인 만족도\n4. 개선하고 싶은 점\n5. 마무리', '["What I like about my job is","Another advantage is that","On the other hand, one thing I dislike is","Overall, I am quite satisfied with","If I could improve one thing, it would be"]', 70);
+
+-- =============================================
+-- 7. 서베이 추천 & 고득점 꿀팁 (25개)
+-- =============================================
+
+-- 전체 공통 전략 팁
+INSERT OR IGNORE INTO survey_tips (id, topic_id, target_level, tip_type, title, content, priority) VALUES
+(1,  NULL, NULL, 'strategy', '🎯 서베이 주제 선택의 핵심', '본인이 실제로 경험이 많은 주제를 선택하세요. 거짓 경험을 말하면 자연스러움이 떨어져 감점 요인이 됩니다.', 10),
+(2,  NULL, NULL, 'strategy', '📊 서베이 3~5개 선택 전략', '3개 선택 시 주제가 반복되어 준비가 쉽지만 같은 말이 반복될 수 있습니다. 4~5개 선택 시 다양한 주제를 다룰 수 있어 고득점에 유리합니다.', 9),
+(3,  NULL, NULL, 'strategy', '⚡ 난이도 5-6 설정 추천', 'IM3 이상 목표 시 난이도를 5-6으로 설정하세요. 너무 높으면 어려운 질문이 많아지고, 너무 낮으면 고등급을 받기 어렵습니다.', 8),
+(4,  NULL, NULL, 'warning',  '⚠️ 선택하지 말아야 할 조합', '비슷한 주제끼리만 선택하면 답변이 겹칠 수 있습니다. 예: 음악+영화만 선택하면 문화생활 관련 답변이 반복됩니다.', 7);
+
+-- IH/AL 목표자 전용 팁
+INSERT OR IGNORE INTO survey_tips (id, topic_id, target_level, tip_type, title, content, priority) VALUES
+(5,  NULL, 'IH', 'strategy', '🏆 IH 도달을 위한 핵심 전략', 'IH는 "문단 수준의 답변"이 핵심입니다. 도입-본론-마무리 구조를 반드시 지키고, 구체적인 경험과 이유를 포함하세요. 최소 110단어 이상으로 답변하세요.', 10),
+(6,  NULL, 'IH', 'strategy', '💡 IH 서베이 조합 추천', '자기소개 + 일상 주제(집, 여가) 2개 + 전문 주제(직장, 기술) 1~2개를 선택하면 다양한 난이도의 질문에 대비할 수 있습니다.', 9),
+(7,  NULL, 'AL', 'strategy', '👑 AL 도달을 위한 핵심 전략', 'AL은 "추상적 주제에서도 유창한 토론"이 핵심입니다. 개인 경험뿐 아니라 사회적 관점, 비교, 가설까지 포함하세요. 130단어 이상, 복잡한 문장 구조를 사용하세요.', 10),
+(8,  NULL, 'AL', 'strategy', '💡 AL 서베이 조합 추천', '4~5개 주제를 선택하되, 반드시 콤보(과거-현재 비교) 질문이 나올 주제를 포함하세요. 교육, 기술이 추상적 답변을 연습하기 좋습니다.', 9);
+
+-- 주제별 팁
+INSERT OR IGNORE INTO survey_tips (id, topic_id, target_level, tip_type, title, content, priority) VALUES
+(9,   1, NULL, 'selection', '👤 자기소개 — 필수 선택', '자기소개는 거의 모든 시험에서 첫 질문으로 나옵니다. 반드시 선택하고 완벽하게 준비하세요.', 10),
+(10,  2, NULL, 'selection', '🏠 집/이웃 — 쉬운 주제', '일상적인 내용이라 답변하기 쉽습니다. 집 묘사, 좋아하는 공간, 이웃 에피소드를 미리 준비하세요.', 7),
+(11,  3, NULL, 'selection', '🎯 여가활동 — 추천 주제', '본인의 취미를 구체적으로 설명할 수 있어 답변이 자연스럽습니다. IM 이상 목표 시 강력 추천합니다.', 8),
+(12,  4, NULL, 'selection', '✈️ 여행 — 에피소드 풍부', '여행 경험이 있다면 구체적인 스토리를 말할 수 있어 고득점에 유리합니다. 하지만 해외여행 경험이 없다면 주의하세요.', 7),
+(13,  5, NULL, 'selection', '⚽ 운동/스포츠 — 꿀팁', '실제 운동을 하는 분에게 추천합니다. 운동 루틴, 장소 묘사, 건강 변화 등 다양한 소재가 있습니다.', 7),
+(14,  6, NULL, 'selection', '🎬 음악/영화 — 주의 필요', '좋아하는 아티스트나 영화를 영어로 설명할 수 있어야 합니다. 줄거리 설명이 어려우면 피하세요.', 6),
+(15,  7, NULL, 'selection', '🍳 요리/음식 — 꿀주제', '레시피 설명, 식당 묘사 등 구체적 표현이 많아 답변량을 늘리기 좋습니다.', 8),
+(16,  8, NULL, 'selection', '💻 기술/인터넷 — AL 추천', '기술 변화, 소셜 미디어 영향 등 추상적 토론이 가능하여 IH/AL 목표 시 유리합니다.', 8),
+(17,  9, NULL, 'selection', '📚 교육 — IH/AL 적합', '교육 시스템 변화, 과거-현재 비교 등 복잡한 주제를 다룰 수 있어 고급 레벨에 적합합니다.', 7),
+(18, 10, NULL, 'selection', '💼 직장/업무 — 직장인 필수', '직장인이라면 가장 자연스럽게 답할 수 있는 주제입니다. 업무 경험이 풍부할수록 유리합니다.', 8);
+
+-- 조합 관련 경고
+INSERT OR IGNORE INTO survey_tips (id, topic_id, target_level, tip_type, title, content, priority) VALUES
+(19, NULL, NULL, 'warning', '🚫 초보자 함정 주제', '여행과 교육은 영어 표현이 어려울 수 있습니다. IM1 이하 목표라면 자기소개, 집, 여가, 음식처럼 쉬운 주제를 선택하세요.', 8),
+(20, NULL, NULL, 'strategy', '🔄 콤보 질문 대비 팁', '서베이 주제에서 "과거와 현재 비교" 콤보 질문이 자주 나옵니다. 각 주제별로 과거-현재 변화를 미리 준비하세요.', 8),
+(21, NULL, NULL, 'strategy', '🎙️ 롤플레이 대비 팁', '모든 서베이 주제에서 롤플레이 질문이 나올 수 있습니다. "전화로 문의하기/불만 제기하기" 패턴을 연습하세요.', 7),
+(22, NULL, 'IM1', 'strategy', '📝 IM1 기본 전략', '나열식으로 경험을 말하되, 각 문장을 because, so, and then 등으로 연결하세요. 60단어 이상이면 충분합니다.', 9),
+(23, NULL, 'IM2', 'strategy', '📝 IM2 중급 전략', '문장을 연결하여 단락을 만드세요. 구체적인 예시와 이유를 포함하고, 70단어 이상을 목표로 하세요.', 9),
+(24, NULL, 'IM3', 'strategy', '📝 IM3 상급 전략', '문단 수준의 답변을 목표로 하세요. 도입-본론-마무리 구조를 사용하고, 80단어 이상으로 답변하세요. 구체적 경험 1~2개를 반드시 포함하세요.', 9),
+(25, NULL, NULL, 'strategy', '⏰ 시간 관리 꿀팁', '답변 시간은 보통 40~90초입니다. 너무 짧으면 감점되고, 너무 길면 내용이 산만해집니다. 연습할 때 타이머를 활용하세요.', 7);

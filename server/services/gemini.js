@@ -1,8 +1,8 @@
-// Gemini API 서비스 (M3에서 상세 구현)
-// OPIc 답변 평가를 위한 Gemini API 프록시
+// Gemini API 서비스
+// OPIc 답변 평가 + 음성 분석을 위한 Gemini API 프록시
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = 'gemini-2.5-flash-lite';
+const GEMINI_MODEL = 'gemini-2.5-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
 // OPIc 채점관 시스템 프롬프트
@@ -20,6 +20,8 @@ ACTFL 기준에 따라 영어 답변을 평가합니다.
   "grammar_score": 72,
   "fluency_score": 65,
   "vocabulary_score": 68,
+  "pronunciation_score": 70,
+  "content_organization_score": 65,
   "strengths": ["잘한 점 1", "잘한 점 2", "잘한 점 3"],
   "improvements": ["개선할 점 1 (목표 레벨 기준)", "개선할 점 2", "개선할 점 3"]
 }
@@ -29,8 +31,43 @@ ACTFL 기준에 따라 영어 답변을 평가합니다.
 - grammar_score: 문법 정확도 (0~100)
 - fluency_score: 유창성, 자연스러움 (0~100)
 - vocabulary_score: 어휘 다양성과 적절성 (0~100)
+- pronunciation_score: 발음 자연스러움 추정 (0~100, 텍스트 기반 추정)
+- content_organization_score: 답변 구성력 (0~100, 도입-본론-마무리 구조)
 - strengths: 잘한 점 3가지 (한국어)
 - improvements: 목표 레벨 도달을 위한 개선점 3가지 (한국어)
+
+JSON만 출력하고 다른 텍스트는 포함하지 마세요.`;
+
+// 음성 분석 시스템 프롬프트
+const VOICE_ANALYSIS_PROMPT = `당신은 OPIc 시험 전문 음성 분석관입니다.
+제공된 오디오를 듣고 영어 말하기를 분석합니다.
+
+다음 형식의 JSON으로 분석 결과를 출력하세요:
+{
+  "transcript": "음성을 텍스트로 변환한 결과",
+  "pronunciation_score": 72,
+  "fluency_score": 65,
+  "intonation_score": 68,
+  "pace_wpm": 120,
+  "filler_words": ["um", "uh", "like"],
+  "pause_count": 3,
+  "clarity_score": 70,
+  "feedback": {
+    "pronunciation": "발음에 대한 상세 피드백 (한국어)",
+    "fluency": "유창성에 대한 상세 피드백 (한국어)",
+    "intonation": "억양에 대한 상세 피드백 (한국어)",
+    "overall": "전반적인 피드백과 개선 방향 (한국어)"
+  }
+}
+
+평가 기준:
+- pronunciation_score: 발음 정확도 (0~100)
+- fluency_score: 유창성 (0~100)
+- intonation_score: 억양 자연스러움 (0~100)
+- pace_wpm: 분당 단어 수 (정상: 110~150)
+- filler_words: 사용한 필러 워드 목록
+- pause_count: 비정상적으로 긴 멈춤 횟수
+- clarity_score: 전체 명확성 (0~100)
 
 JSON만 출력하고 다른 텍스트는 포함하지 마세요.`;
 
@@ -106,6 +143,10 @@ async function evaluateAnswers(answers, targetLevel) {
       throw new Error('Gemini API 응답 형식이 올바르지 않습니다');
     }
 
+    // 신규 필드 기본값 보장
+    result.pronunciation_score = result.pronunciation_score || 0;
+    result.content_organization_score = result.content_organization_score || 0;
+
     return result;
   } catch (err) {
     clearTimeout(timeout);
@@ -120,4 +161,82 @@ async function evaluateAnswers(answers, targetLevel) {
   }
 }
 
-module.exports = { evaluateAnswers };
+/**
+ * Gemini API를 호출하여 음성 녹음을 분석
+ * @param {string} audioBase64 - Base64 인코딩된 오디오 데이터
+ * @param {string} questionText - 질문 텍스트 (컨텍스트)
+ * @returns {Object} 음성 분석 결과
+ */
+async function analyzeVoiceRecording(audioBase64, questionText) {
+  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'your_api_key_here') {
+    const err = new Error('Gemini API Key가 설정되지 않았습니다.');
+    err.status = 400;
+    throw err;
+  }
+
+  const contextText = questionText
+    ? `질문: ${questionText}\n이 질문에 대한 사용자의 영어 음성 답변을 분석해주세요.`
+    : '사용자의 영어 음성을 분석해주세요.';
+
+  const requestBody = {
+    contents: [{
+      parts: [
+        {
+          inlineData: {
+            mimeType: 'audio/webm',
+            data: audioBase64
+          }
+        },
+        { text: contextText }
+      ]
+    }],
+    systemInstruction: {
+      parts: [{ text: VOICE_ANALYSIS_PROMPT }]
+    },
+    generationConfig: {
+      temperature: 0.3,
+      maxOutputTokens: 2048,
+      responseMimeType: 'application/json'
+    }
+  };
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000); // 30초 (오디오 처리)
+
+  try {
+    const response = await fetch(GEMINI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      const err = new Error(`Gemini API 오류: ${response.status}`);
+      err.status = response.status;
+      throw err;
+    }
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      throw new Error('Gemini API 음성 분석 응답이 비어있습니다');
+    }
+
+    return JSON.parse(text);
+  } catch (err) {
+    clearTimeout(timeout);
+
+    if (err.name === 'AbortError') {
+      const timeoutErr = new Error('음성 분석 시간이 초과되었습니다 (30초)');
+      timeoutErr.status = 504;
+      throw timeoutErr;
+    }
+
+    throw err;
+  }
+}
+
+module.exports = { evaluateAnswers, analyzeVoiceRecording };

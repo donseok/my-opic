@@ -1,5 +1,5 @@
 // API 호출 유틸리티
-// fetch 래퍼 — GET, POST, PUT 요청 공통 처리
+// fetch 래퍼 — GET, POST, PUT, DELETE 요청 공통 처리
 
 const API_BASE = '/api/v1';
 
@@ -45,6 +45,42 @@ async function apiPost(path, body) {
 async function apiPut(path, body) {
   const res = await fetch(`${API_BASE}${path}`, {
     method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: '요청 실패' }));
+    throw { status: res.status, ...err };
+  }
+  return res.json();
+}
+
+/**
+ * API DELETE 요청
+ * @param {string} path - API 경로
+ * @returns {Promise<Object>} 응답 데이터
+ */
+async function apiDelete(path) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: '요청 실패' }));
+    throw { status: res.status, ...err };
+  }
+  return res.json();
+}
+
+/**
+ * API POST 요청 (FormData / 대용량 데이터)
+ * @param {string} path - API 경로
+ * @param {Object} body - 요청 본문 (JSON으로 전송, 대용량 지원)
+ * @returns {Promise<Object>} 응답 데이터
+ */
+async function apiPostLarge(path, body) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });

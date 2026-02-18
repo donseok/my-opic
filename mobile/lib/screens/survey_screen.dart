@@ -17,6 +17,8 @@ class _SurveyScreenState extends State<SurveyScreen> {
   Set<int> _selectedIds = {};
   bool _loading = true;
   String? _error;
+  Map<String, dynamic>? _recommendations;
+  List<Map<String, dynamic>> _tips = [];
 
   @override
   void initState() {
@@ -28,11 +30,20 @@ class _SurveyScreenState extends State<SurveyScreen> {
   Future<void> _loadTopics() async {
     setState(() { _loading = true; _error = null; });
     try {
-      final data = await ApiService.get('/topics');
-      final topics = (data as List).map((j) => Topic.fromJson(j)).toList();
+      final results = await Future.wait([
+        ApiService.get('/topics'),
+        ApiService.get('/topics/recommendations').catchError((_) => null),
+        ApiService.get('/topics/tips').catchError((_) => {'tips': []}),
+      ]);
+      final topics = (results[0] as List).map((j) => Topic.fromJson(j)).toList();
       setState(() {
         _topics = topics;
         _selectedIds = topics.where((t) => t.isSelected).map((t) => t.id).toSet();
+        _recommendations = results[1] as Map<String, dynamic>?;
+        final tipsData = results[2];
+        if (tipsData is Map<String, dynamic> && tipsData['tips'] != null) {
+          _tips = List<Map<String, dynamic>>.from(tipsData['tips']);
+        }
         _loading = false;
       });
     } catch (e) {
@@ -194,6 +205,159 @@ class _SurveyScreenState extends State<SurveyScreen> {
               child: const Text('선택 저장'),
             ),
           ),
+
+          // 서베이 추천 & 꼼팁
+          if (_recommendations != null || _tips.isNotEmpty)
+            _buildTipsSection(theme),
+
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+
+  /// 서베이 추천 & 꼼팁 섹션
+  Widget _buildTipsSection(ThemeData theme) {
+    final colors = theme.extension<AppColors>()!;
+    final targetLevel = _recommendations?['target_level'] ?? '';
+    final recommended = _recommendations?['recommended'] as List<dynamic>? ?? [];
+    final levelTips = _recommendations?['level_tips'] as List<dynamic>? ?? [];
+
+    // 팁을 유형별로 분류
+    final strategies = _tips.where((t) => t['tip_type'] == 'strategy').toList();
+    final warnings = _tips.where((t) => t['tip_type'] == 'warning').toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 28),
+        Divider(color: theme.colorScheme.outline.withValues(alpha: 0.3)),
+        const SizedBox(height: 16),
+
+        // AI 추천 조합
+        if (recommended.isNotEmpty) ...[
+          Text('🤖 AI 추천 서베이 조합', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [const Color(0xFFEFF6FF), const Color(0xFFDBEAFE)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFF93C5FD)),
+            ),
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (targetLevel.isNotEmpty)
+                  Text('목표 레벨: $targetLevel',
+                    style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w600, fontSize: 13)),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: recommended.map<Widget>((r) {
+                    final topicId = r['id'];
+                    final name = r['name'] ?? '';
+                    final icon = r['icon'] ?? '📌';
+                    return GestureDetector(
+                      onTap: () {
+                        if (!_selectedIds.contains(topicId) && _selectedIds.length < 5) {
+                          _toggleTopic(topicId);
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text('$icon $name',
+                          style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.w600)),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      final ids = recommended.map<int>((r) => r['id'] as int).toSet();
+                      setState(() => _selectedIds = ids);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: theme.colorScheme.primary,
+                      side: BorderSide(color: theme.colorScheme.primary),
+                    ),
+                    child: const Text('추천 조합 적용'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+
+        // 레벨별 팁
+        if (levelTips.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          Text('🎯 레벨별 전략', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          ...levelTips.map<Widget>((tip) => _buildTipCard(theme, colors, tip, 'strategy')),
+        ],
+
+        // 전략 팁
+        if (strategies.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          Text('💡 고득점 꼼팁', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          ...strategies.take(5).map<Widget>((tip) => _buildTipCard(theme, colors, tip, 'strategy')),
+        ],
+
+        // 경고 팁
+        if (warnings.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          Text('⚠️ 주의사항', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          ...warnings.map<Widget>((tip) => _buildTipCard(theme, colors, tip, 'warning')),
+        ],
+      ],
+    );
+  }
+
+  /// 팁 카드 위젯
+  Widget _buildTipCard(ThemeData theme, AppColors colors, dynamic tip, String type) {
+    final title = tip['title'] ?? '';
+    final content = tip['content'] ?? '';
+
+    Color bgColor;
+    Color borderColor;
+    if (type == 'warning') {
+      bgColor = const Color(0xFFFEF3C7);
+      borderColor = const Color(0xFFFCD34D);
+    } else {
+      bgColor = theme.colorScheme.surface;
+      borderColor = theme.colorScheme.outline.withValues(alpha: 0.3);
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 6),
+          Text(content, style: TextStyle(fontSize: 13, color: colors.textMuted, height: 1.5)),
         ],
       ),
     );

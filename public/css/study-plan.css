@@ -1,0 +1,239 @@
+/* 학습 플랜 화면 스타일 — 모던 리디자인 */
+
+.plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.plan-date {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.plan-completion {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  margin-bottom: 22px;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.plan-completion::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-accent);
+}
+
+.plan-completion-rate {
+  font-size: 42px;
+  font-weight: 800;
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.plan-completion-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.plan-completion-bar {
+  margin-top: 14px;
+}
+
+/* 태스크 목록 */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.task-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-card);
+}
+
+.task-item:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateX(2px);
+}
+
+.task-item.completed {
+  opacity: 0.55;
+}
+
+.task-item.completed:hover {
+  opacity: 0.7;
+}
+
+.task-checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-spring);
+}
+
+.task-checkbox:hover {
+  border-color: var(--accent);
+}
+
+.task-checkbox.checked {
+  background: var(--gradient-accent);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+  transform: scale(1.05);
+}
+
+.task-content {
+  flex: 1;
+}
+
+.task-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.task-item.completed .task-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.task-description {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+.task-type-icon {
+  font-size: 18px;
+}
+
+.task-priority {
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.priority-high { background: var(--error-bg); color: var(--error); }
+.priority-medium { background: var(--warning-bg); color: var(--warning); }
+.priority-low { background: rgba(2, 132, 199, 0.08); color: var(--accent); }
+
+/* 약점 분석 카드 */
+.weakness-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 18px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-card);
+}
+
+.weakness-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.weakness-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.weakness-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.weakness-bar-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  min-width: 60px;
+  font-weight: 500;
+}
+
+.weakness-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(226, 232, 240, 0.5);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.weakness-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.weakness-bar-value {
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 30px;
+  text-align: right;
+}
+
+/* 플랜 히스토리 */
+.plan-history {
+  margin-top: 28px;
+}
+
+.plan-history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-btn);
+  margin-bottom: 6px;
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+}
+
+.plan-history-item:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.plan-history-date {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.plan-history-rate {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+}

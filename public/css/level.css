@@ -1,16 +1,17 @@
-/* 레벨 설정 화면 스타일 */
+/* 레벨 설정 화면 스타일 — 모던 리디자인 */
 
 .level-section {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .level-section-title {
   font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 12px;
+  font-weight: 700;
+  margin-bottom: 14px;
   display: flex;
   align-items: center;
   gap: 8px;
+  letter-spacing: -0.2px;
 }
 
 .level-list {
@@ -23,22 +24,25 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 14px 18px;
   background: var(--bg-card);
   border: 2px solid var(--border-color);
-  border-radius: var(--radius-btn);
+  border-radius: var(--radius-card);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-normal);
   user-select: none;
+  box-shadow: var(--shadow-card);
 }
 
 .level-item:hover {
-  background: var(--bg-card-hover);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
 }
 
 .level-item.selected {
   border-color: var(--accent);
-  background: rgba(45, 212, 191, 0.08);
+  background: var(--gradient-accent-soft);
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.12);
 }
 
 .level-item.disabled {
@@ -50,25 +54,30 @@
 .level-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .level-code {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--accent);
-  min-width: 40px;
+  font-size: 17px;
+  font-weight: 800;
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  min-width: 44px;
 }
 
 .level-name {
   font-size: 14px;
   color: var(--text-primary);
+  font-weight: 500;
 }
 
 .level-words {
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   white-space: nowrap;
+  font-weight: 500;
 }
 
 /* 갭 분석 */
@@ -76,14 +85,27 @@
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
-  padding: 20px;
-  margin-bottom: 20px;
+  padding: 24px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.gap-analysis::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-accent);
 }
 
 .gap-title {
   font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 16px;
+  font-weight: 700;
+  margin-bottom: 18px;
   text-align: center;
 }
 
@@ -91,19 +113,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 14px;
+  margin-bottom: 18px;
 }
 
 .gap-level-badge {
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-radius: var(--radius-badge);
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 800;
+  transition: all var(--transition-normal);
 }
 
 .gap-current {
-  background: rgba(148, 163, 184, 0.2);
+  background: rgba(148, 163, 184, 0.12);
   color: var(--text-secondary);
 }
 
@@ -113,8 +136,9 @@
 }
 
 .gap-target {
-  background: rgba(45, 212, 191, 0.15);
+  background: rgba(2, 132, 199, 0.08);
   color: var(--accent);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.1);
 }
 
 .gap-steps {
@@ -125,12 +149,15 @@
 }
 
 .gap-steps strong {
-  color: var(--accent);
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .gap-details {
   font-size: 13px;
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.7;
   text-align: center;
 }

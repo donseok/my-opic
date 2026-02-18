@@ -26,19 +26,40 @@ router.post('/evaluate', async (req, res, next) => {
 
     db.prepare(
       `INSERT OR REPLACE INTO ai_feedbacks
-       (session_id, predicted_level, grammar_score, fluency_score, vocabulary_score, strengths, improvements, raw_response, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       (session_id, predicted_level, grammar_score, fluency_score, vocabulary_score, pronunciation_score, content_organization_score, strengths, improvements, raw_response, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       session_id,
       feedback.predicted_level,
       feedback.grammar_score,
       feedback.fluency_score,
       feedback.vocabulary_score,
+      feedback.pronunciation_score || 0,
+      feedback.content_organization_score || 0,
       JSON.stringify(feedback.strengths),
       JSON.stringify(feedback.improvements),
       JSON.stringify(feedback),
       now
     );
+
+    // 스킬 평가 기록 저장
+    try {
+      db.prepare(
+        `INSERT INTO skill_assessments
+         (session_id, grammar_score, vocabulary_score, fluency_score, pronunciation_score, content_organization_score, assessed_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+      ).run(
+        session_id,
+        feedback.grammar_score,
+        feedback.vocabulary_score,
+        feedback.fluency_score,
+        feedback.pronunciation_score || 0,
+        feedback.content_organization_score || 0,
+        now
+      );
+    } catch (e) {
+      // 스킬 평가 저장 실패 무시
+    }
 
     res.json(feedback);
   } catch (err) {

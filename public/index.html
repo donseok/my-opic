@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OPIc Master</title>
 
+  <!-- Pretendard 폰트 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+
   <!-- 글로벌 스타일 -->
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/survey.css">
@@ -13,6 +16,12 @@
   <link rel="stylesheet" href="/css/exam.css">
   <link rel="stylesheet" href="/css/feedback.css">
   <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/scripts.css">
+  <link rel="stylesheet" href="/css/study-plan.css">
+  <link rel="stylesheet" href="/css/srs.css">
+  <link rel="stylesheet" href="/css/voice.css">
+  <link rel="stylesheet" href="/css/attendance.css">
+  <link rel="stylesheet" href="/css/sentence-practice.css">
 
   <!-- CDN: Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
@@ -37,6 +46,10 @@
 
   <!-- 하단 탭바 네비게이션 -->
   <nav class="tab-bar">
+    <button class="tab-item" data-tab="studyplan">
+      <i data-lucide="calendar-check"></i>
+      <span>학습플랜</span>
+    </button>
     <button class="tab-item active" data-tab="survey">
       <i data-lucide="clipboard-list"></i>
       <span>서베이</span>
@@ -45,6 +58,10 @@
       <i data-lucide="book-open"></i>
       <span>문제은행</span>
     </button>
+    <button class="tab-item" data-tab="scripts">
+      <i data-lucide="file-text"></i>
+      <span>스크립트</span>
+    </button>
     <button class="tab-item" data-tab="exam">
       <i data-lucide="pen-tool"></i>
       <span>모의시험</span>
@@ -52,6 +69,10 @@
     <button class="tab-item" data-tab="feedback">
       <i data-lucide="message-circle"></i>
       <span>AI피드백</span>
+    </button>
+    <button class="tab-item" data-tab="srs">
+      <i data-lucide="repeat"></i>
+      <span>복습</span>
     </button>
     <button class="tab-item" data-tab="dashboard">
       <i data-lucide="bar-chart-2"></i>
@@ -71,9 +92,13 @@
   <script src="/js/utils/timer.js"></script>
   <script src="/js/utils/wordcount.js"></script>
   <script src="/js/utils/tts.js"></script>
+  <script src="/js/utils/recorder.js"></script>
   <script src="/js/exam.js"></script>
   <script src="/js/feedback.js"></script>
   <script src="/js/dashboard.js"></script>
+  <script src="/js/scripts.js"></script>
+  <script src="/js/study-plan.js"></script>
+  <script src="/js/srs.js"></script>
   <script src="/js/app.js"></script>
 
 </body>

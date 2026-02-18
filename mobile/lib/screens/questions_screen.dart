@@ -60,9 +60,9 @@ class _QuestionsScreenState extends State<QuestionsScreen> with TickerProviderSt
 
   Color _typeColor(String type) {
     switch (type) {
-      case 'survey': return const Color(0xFF2DD4BF);
-      case 'combo': return const Color(0xFFFBBF24);
-      case 'roleplay': return const Color(0xFF818CF8);
+      case 'survey': return const Color(0xFF0284C7);
+      case 'combo': return const Color(0xFFF59E0B);
+      case 'roleplay': return const Color(0xFF7C3AED);
       case 'unexpected': return const Color(0xFFEF4444);
       default: return const Color(0xFF94A3B8);
     }

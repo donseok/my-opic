@@ -28,6 +28,21 @@ function getDatabase() {
   const schema = fs.readFileSync(SCHEMA_PATH, 'utf-8');
   db.exec(schema);
 
+  // 마이그레이션: ai_feedbacks에 신규 컬럼 추가
+  try {
+    const cols = db.prepare("PRAGMA table_info(ai_feedbacks)").all().map(c => c.name);
+    if (!cols.includes('pronunciation_score')) {
+      db.exec('ALTER TABLE ai_feedbacks ADD COLUMN pronunciation_score INTEGER');
+      console.log('[DB] 마이그레이션: ai_feedbacks.pronunciation_score 추가');
+    }
+    if (!cols.includes('content_organization_score')) {
+      db.exec('ALTER TABLE ai_feedbacks ADD COLUMN content_organization_score INTEGER');
+      console.log('[DB] 마이그레이션: ai_feedbacks.content_organization_score 추가');
+    }
+  } catch (e) {
+    // 이미 존재하면 무시
+  }
+
   // 시드 데이터 투입 (INSERT OR IGNORE로 중복 방지)
   const seed = fs.readFileSync(SEED_PATH, 'utf-8');
   const topicCount = db.prepare('SELECT COUNT(*) as count FROM survey_topics').get().count;
@@ -42,7 +57,15 @@ function getDatabase() {
       const newCount = db.prepare('SELECT COUNT(*) as count FROM answer_guides').get().count;
       console.log(`[DB] 답변 가이드 보충 완료: ${guideCount} → ${newCount}개`);
     } else {
-      console.log('[DB] 기존 데이터 확인 — 시드 생략');
+      // survey_tips 보충
+      const tipCount = db.prepare('SELECT COUNT(*) as count FROM survey_tips').get().count;
+      if (tipCount < 25) {
+        db.exec(seed);
+        const newTipCount = db.prepare('SELECT COUNT(*) as count FROM survey_tips').get().count;
+        console.log(`[DB] 서베이 팁 보충 완료: ${tipCount} → ${newTipCount}개`);
+      } else {
+        console.log('[DB] 기존 데이터 확인 — 시드 생략');
+      }
     }
   }
 

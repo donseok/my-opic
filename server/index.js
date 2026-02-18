@@ -20,9 +20,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// 미들웨어 설정
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// 미들웨어 설정 — 대용량 오디오 데이터를 위해 10MB 제한
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 // 정적 파일 서빙 (public/ 디렉토리)
 app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -38,6 +38,13 @@ const questionsRouter = require('./routes/questions');
 const examRouter = require('./routes/exam');
 const feedbackRouter = require('./routes/feedback');
 const dashboardRouter = require('./routes/dashboard');
+const voiceRouter = require('./routes/voice');
+const scriptsRouter = require('./routes/scripts');
+const studyPlanRouter = require('./routes/studyPlan');
+const srsRouter = require('./routes/srs');
+const studySessionsRouter = require('./routes/studySessions');
+const attendanceRouter = require('./routes/attendance');
+const sentencePracticeRouter = require('./routes/sentencePractice');
 
 app.use('/api/v1/topics', topicsRouter);
 app.use('/api/v1/levels', levelsRouter);
@@ -46,6 +53,13 @@ app.use('/api/v1/questions', questionsRouter);
 app.use('/api/v1/exam', examRouter);
 app.use('/api/v1/feedback', feedbackRouter);
 app.use('/api/v1/dashboard', dashboardRouter);
+app.use('/api/v1/voice', voiceRouter);
+app.use('/api/v1/scripts', scriptsRouter);
+app.use('/api/v1/study-plan', studyPlanRouter);
+app.use('/api/v1/srs', srsRouter);
+app.use('/api/v1/study-sessions', studySessionsRouter);
+app.use('/api/v1/attendance', attendanceRouter);
+app.use('/api/v1/sentence-practice', sentencePracticeRouter);
 
 // SPA 폴백 — 모든 비-API 요청을 index.html로
 app.get('*', (req, res) => {

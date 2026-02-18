@@ -1,18 +1,23 @@
 // OPIc Master SPA 라우터 + 초기화
-// Hash 기반 라우팅 (#survey, #level, #questions, #exam, #feedback, #dashboard)
+// Hash 기반 라우팅
 
 const App = {
   // 탭-모듈 매핑
   modules: {
+    studyplan: typeof StudyPlanModule !== 'undefined' ? StudyPlanModule : null,
     survey: SurveyModule,
     questions: QuestionsModule,
+    scripts: typeof ScriptsModule !== 'undefined' ? ScriptsModule : null,
     exam: ExamModule,
     feedback: FeedbackModule,
+    srs: typeof SrsModule !== 'undefined' ? SrsModule : null,
     dashboard: DashboardModule,
     level: LevelModule
   },
 
   currentTab: 'survey', // 기본 탭
+  sessionStartTime: null, // 학습 세션 추적
+  currentSessionId: null,
 
   /**
    * 앱 초기화
@@ -36,6 +41,9 @@ const App = {
       const hash = window.location.hash.replace('#', '') || 'survey';
       this.navigate(hash, false);
     });
+
+    // 학습 세션 시작
+    this.startStudySession();
 
     // 초기 라우팅
     const initialTab = window.location.hash.replace('#', '') || 'survey';
@@ -69,8 +77,41 @@ const App = {
     if (content && this.modules[tab]) {
       this.modules[tab].render(content);
     }
+  },
+
+  /**
+   * 학습 세션 추적 시작
+   */
+  async startStudySession() {
+    this.sessionStartTime = Date.now();
+    try {
+      const result = await apiPost('/study-sessions/start', { activity_type: 'general' });
+      this.currentSessionId = result.id;
+    } catch (e) {
+      // 세션 추적 실패 무시
+    }
+  },
+
+  /**
+   * 학습 세션 종료
+   */
+  async endStudySession() {
+    if (this.currentSessionId) {
+      try {
+        await apiPut('/study-sessions/' + this.currentSessionId + '/end', {});
+      } catch (e) {
+        // 무시
+      }
+    }
   }
 };
+
+// 페이지 언로드 시 세션 종료
+window.addEventListener('beforeunload', () => {
+  if (App.currentSessionId) {
+    navigator.sendBeacon(API_BASE + '/study-sessions/' + App.currentSessionId + '/end', JSON.stringify({}));
+  }
+});
 
 // DOM 로드 후 앱 초기화
 document.addEventListener('DOMContentLoaded', () => {

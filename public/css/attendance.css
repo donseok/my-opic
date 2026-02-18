@@ -1,0 +1,131 @@
+/* 출석 체크 & 학습 포인트 스타일 */
+
+/* 출석 체크 카드 - 대시보드 상단 */
+.attendance-card {
+  background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
+  border-radius: 16px;
+  padding: 20px 24px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.25);
+  cursor: default;
+}
+
+.attendance-card.checked {
+  background: linear-gradient(135deg, #059669 0%, #34D399 100%);
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.25);
+}
+
+.attendance-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.attendance-title {
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.attendance-streak {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.attendance-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.attendance-points {
+  text-align: center;
+}
+
+.attendance-points .points-value {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.attendance-points .points-label {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.check-in-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.check-in-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.check-in-btn:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.check-in-btn.checked {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* 포인트 뱃지 애니메이션 */
+.points-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  background: linear-gradient(135deg, #FCD34D, #F59E0B);
+  color: #1F2937;
+  font-size: 28px;
+  font-weight: 800;
+  padding: 20px 32px;
+  border-radius: 16px;
+  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4);
+  animation: pointsPopup 1.5s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes pointsPopup {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+  40% { transform: translate(-50%, -50%) scale(1); }
+  80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -70%) scale(0.8); opacity: 0; }
+}
+
+/* 출석 캘린더 미니 */
+.attendance-mini-calendar {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.attendance-mini-calendar .day-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.attendance-mini-calendar .day-dot.active {
+  background: rgba(255, 255, 255, 0.9);
+}

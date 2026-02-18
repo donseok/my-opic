@@ -5,8 +5,7 @@ import '../models/dashboard_stats.dart';
 import '../models/exam_session.dart';
 import '../main.dart';
 
-/// 대시보드 화면 (FR-027~030)
-/// 통계 카드, 점수 추이 차트, 레벨 진행률, 시험 이력
+/// 대시보드 화면 — 통계, 레이더 차트, 스트릭, 학습시간, 히트맵, 시험 이력
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -18,9 +17,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   DashboardStats? _stats;
   List<Map<String, dynamic>> _trends = [];
   List<ExamSession> _sessions = [];
+  Map<String, dynamic>? _skills;
+  Map<String, dynamic>? _streak;
+  Map<String, dynamic>? _weekly;
+  Map<String, dynamic>? _attendance;
   bool _loading = true;
+  bool _checkingIn = false;
 
-  // 레벨 순서
   final List<String> _levelOrder = const ['NL', 'NM', 'NH', 'IL', 'IM1', 'IM2', 'IM3', 'IH', 'AL'];
 
   @override
@@ -32,14 +35,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _loadData() async {
     setState(() => _loading = true);
     try {
-      final statsData = await ApiService.get('/dashboard/stats');
-      final trendsData = await ApiService.get('/dashboard/trends');
-      final sessionsData = await ApiService.get('/exam/sessions');
+      final results = await Future.wait([
+        ApiService.get('/dashboard/stats'),
+        ApiService.get('/dashboard/trends'),
+        ApiService.get('/exam/sessions'),
+        ApiService.get('/dashboard/skills').catchError((_) => null),
+        ApiService.get('/dashboard/streak').catchError((_) => null),
+        ApiService.get('/dashboard/weekly').catchError((_) => null),
+        ApiService.get('/attendance/status').catchError((_) => null),
+      ]);
 
       setState(() {
-        _stats = DashboardStats.fromJson(statsData);
-        _trends = List<Map<String, dynamic>>.from(trendsData);
-        _sessions = (sessionsData as List).map((j) => ExamSession.fromJson(j)).toList();
+        _stats = DashboardStats.fromJson(results[0]);
+        _trends = List<Map<String, dynamic>>.from(results[1]);
+        _sessions = (results[2] as List).map((j) => ExamSession.fromJson(j)).toList();
+        _skills = results[3] as Map<String, dynamic>?;
+        _streak = results[4] as Map<String, dynamic>?;
+        _weekly = results[5] as Map<String, dynamic>?;
+        _attendance = results[6] as Map<String, dynamic>?;
         _loading = false;
       });
     } catch (e) {
@@ -74,62 +87,56 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('학습 대시보드', style: theme.textTheme.titleLarge),
-          const SizedBox(height: 16),
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('대시보드', style: theme.textTheme.titleLarge),
+            const SizedBox(height: 16),
 
-          // 통계 요약 카드
-          Row(
-            children: [
-              Expanded(child: _StatCard(
-                icon: '📝', label: '총 시험', value: '${_stats!.totalExams}회',
-              )),
-              const SizedBox(width: 8),
-              Expanded(child: _StatCard(
-                icon: '🎯', label: '최근 등급',
-                value: _stats!.latestPredictedLevel ?? '-',
-              )),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(child: _StatCard(
-                icon: '📖', label: '문법', value: '${_stats!.avgGrammar.toStringAsFixed(0)}점',
-              )),
-              const SizedBox(width: 8),
-              Expanded(child: _StatCard(
-                icon: '🗣️', label: '유창성', value: '${_stats!.avgFluency.toStringAsFixed(0)}점',
-              )),
-              const SizedBox(width: 8),
-              Expanded(child: _StatCard(
-                icon: '📚', label: '어휘', value: '${_stats!.avgVocabulary.toStringAsFixed(0)}점',
-              )),
-            ],
-          ),
+            // 출석 체크 카드
+            _buildAttendanceCard(theme, colors),
 
-          // 레벨 진행률
-          const SizedBox(height: 20),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('레벨 진행률', style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 12),
-                  _buildLevelProgress(theme, colors),
-                ],
-              ),
+            // 스트릭 + 주간 요약
+            if (_streak != null) _buildStreakSection(theme, colors),
+
+            // 통계 요약 카드 (5축)
+            Row(
+              children: [
+                Expanded(child: _StatCard(icon: '📝', label: '총 시험', value: '${_stats!.totalExams}회')),
+                const SizedBox(width: 8),
+                Expanded(child: _StatCard(icon: '🎯', label: '최근 등급', value: _stats!.latestPredictedLevel ?? '-')),
+              ],
             ),
-          ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(child: _StatCard(icon: '📖', label: '문법', value: '${_stats!.avgGrammar.toStringAsFixed(0)}점')),
+                const SizedBox(width: 6),
+                Expanded(child: _StatCard(icon: '🗣️', label: '유창성', value: '${_stats!.avgFluency.toStringAsFixed(0)}점')),
+                const SizedBox(width: 6),
+                Expanded(child: _StatCard(icon: '📚', label: '어휘', value: '${_stats!.avgVocabulary.toStringAsFixed(0)}점')),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(child: _StatCard(icon: '🎤', label: '발음', value: '${_stats!.avgPronunciation.toStringAsFixed(0)}점')),
+                const SizedBox(width: 8),
+                Expanded(child: _StatCard(icon: '📐', label: '구성력', value: '${_stats!.avgOrganization.toStringAsFixed(0)}점')),
+              ],
+            ),
 
-          // 점수 추이 차트
-          if (_trends.isNotEmpty) ...[
+            // 스킬 레이더 차트
+            if (_skills != null) ...[
+              const SizedBox(height: 20),
+              _buildRadarSection(theme, colors),
+            ],
+
+            // 레벨 진행률
             const SizedBox(height: 20),
             Card(
               child: Padding(
@@ -137,63 +144,354 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('점수 추이', style: theme.textTheme.titleMedium),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 200,
-                      child: _buildTrendChart(theme, colors),
+                    Text('레벨 진행률', style: theme.textTheme.titleMedium),
+                    const SizedBox(height: 12),
+                    _buildLevelProgress(theme, colors),
+                  ],
+                ),
+              ),
+            ),
+
+            // 점수 추이 차트
+            if (_trends.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('점수 추이', style: theme.textTheme.titleMedium),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: 200,
+                        child: _buildTrendChart(theme, colors),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _Legend(color: const Color(0xFF2563EB), label: '문법'),
+                          const SizedBox(width: 12),
+                          _Legend(color: theme.colorScheme.primary, label: '유창성'),
+                          const SizedBox(width: 12),
+                          _Legend(color: const Color(0xFF7C3AED), label: '어휘'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+
+            // 최근 시험 이력
+            const SizedBox(height: 20),
+            Text('최근 시험 이력', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            ..._sessions.take(5).map((s) => Card(
+              margin: const EdgeInsets.only(bottom: 6),
+              child: ListTile(
+                dense: true,
+                leading: Container(
+                  width: 40, height: 40,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    s.predictedLevel ?? '-',
+                    style: TextStyle(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
                     ),
-                    const SizedBox(height: 8),
-                    // 범례
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _Legend(color: const Color(0xFF818CF8), label: '문법'),
-                        const SizedBox(width: 16),
-                        _Legend(color: theme.colorScheme.primary, label: '유창성'),
-                        const SizedBox(width: 16),
-                        _Legend(color: colors.warning, label: '어휘'),
-                      ],
+                  ),
+                ),
+                title: Text(s.startedAt.substring(0, 10), style: const TextStyle(fontSize: 13)),
+                subtitle: Text(
+                  '문법 ${s.grammarScore ?? '-'} · 유창성 ${s.fluencyScore ?? '-'} · 어휘 ${s.vocabularyScore ?? '-'}',
+                  style: theme.textTheme.bodySmall?.copyWith(fontSize: 11),
+                ),
+                trailing: Text('${s.totalWords}단어', style: theme.textTheme.bodySmall),
+              ),
+            )),
+
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 출석 체크 & 포인트 카드
+  Widget _buildAttendanceCard(ThemeData theme, AppColors colors) {
+    final checkedToday = _attendance?['checked_today'] == true;
+    final streak = _attendance?['current_streak'] ?? 0;
+    final totalPoints = _attendance?['total_points'] ?? 0;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF0284C7), Color(0xFF7C3AED)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0284C7).withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                // 스트릭 아이콘
+                Container(
+                  width: 50, height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    checkedToday ? '✅' : '📅',
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                // 텍스트 정보
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        checkedToday ? '오늘 출석 완료! 🎉' : '오늘의 출석 체크',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '🔥 $streak일 연속 · 💎 ${totalPoints}P',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // 체크인 버튼
+                if (!checkedToday)
+                  ElevatedButton(
+                    onPressed: _checkingIn ? null : _doCheckIn,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF0284C7),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: _checkingIn
+                        ? const SizedBox(
+                            width: 16, height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('출석', style: TextStyle(fontWeight: FontWeight.w700)),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 출석 체크인 처리
+  Future<void> _doCheckIn() async {
+    setState(() => _checkingIn = true);
+    try {
+      final result = await ApiService.post('/attendance/check-in', {});
+      final earned = result['total_today'] ?? 10;
+      setState(() {
+        _attendance = {
+          'checked_today': true,
+          'current_streak': result['streak'] ?? ((_attendance?['current_streak'] ?? 0) + 1),
+          'total_points': (_attendance?['total_points'] ?? 0) + earned,
+          'checked_at': DateTime.now().toIso8601String(),
+        };
+      });
+      if (mounted) {
+        final c = Theme.of(context).extension<AppColors>()!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('출석 완료! +${earned}P 적립 🎉'),
+            backgroundColor: c.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('출석 체크 실패: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _checkingIn = false);
+    }
+  }
+
+  /// 스트릭 + 주간 요약 섹션
+  Widget _buildStreakSection(ThemeData theme, AppColors colors) {
+    final streakCount = _streak?['streak_count'] ?? 0;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              // 스트릭 카운터
+              Container(
+                width: 60, height: 60,
+                decoration: BoxDecoration(
+                  color: streakCount > 0
+                    ? colors.warning.withValues(alpha: 0.12)
+                    : colors.textMuted.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '🔥',
+                      style: TextStyle(fontSize: streakCount > 0 ? 20 : 16),
+                    ),
+                    Text(
+                      '$streakCount',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: streakCount > 0 ? colors.warning : colors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              // 주간 요약
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      streakCount > 0 ? '연속 $streakCount일 학습 중!' : '오늘부터 시작하세요!',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    if (_weekly != null)
+                      Text(
+                        '이번 주: 시험 ${_weekly!['exams'] ?? 0}회 · 학습 ${_weekly!['study_minutes'] ?? 0}분',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 5축 레이더 차트
+  Widget _buildRadarSection(ThemeData theme, AppColors colors) {
+    final thisWeek = _skills?['this_week'] ?? {};
+    final lastWeek = _skills?['last_week'] ?? {};
+
+    final labels = ['문법', '어휘', '유창성', '발음', '구성력'];
+    final keys = ['grammar', 'vocabulary', 'fluency', 'pronunciation', 'organization'];
+
+    List<double> getData(Map<String, dynamic> data) {
+      return keys.map((k) => (data[k] as num? ?? 0).toDouble()).toList();
+    }
+
+    final thisData = getData(thisWeek);
+    final lastData = getData(lastWeek);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('스킬 레이더', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 220,
+              child: RadarChart(
+                RadarChartData(
+                  radarShape: RadarShape.polygon,
+                  radarBorderData: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.3)),
+                  gridBorderData: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.2), width: 1),
+                  tickCount: 4,
+                  ticksTextStyle: const TextStyle(fontSize: 0),
+                  tickBorderData: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+                  titlePositionPercentageOffset: 0.2,
+                  getTitle: (index, _) => RadarChartTitle(
+                    text: labels[index],
+                    angle: 0,
+                  ),
+                  titleTextStyle: TextStyle(
+                    fontSize: 11,
+                    color: theme.textTheme.bodySmall?.color,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  dataSets: [
+                    RadarDataSet(
+                      dataEntries: thisData.map((v) => RadarEntry(value: v)).toList(),
+                      borderColor: theme.colorScheme.primary,
+                      fillColor: theme.colorScheme.primary.withValues(alpha: 0.15),
+                      borderWidth: 2,
+                      entryRadius: 3,
+                    ),
+                    RadarDataSet(
+                      dataEntries: lastData.map((v) => RadarEntry(value: v)).toList(),
+                      borderColor: colors.textMuted,
+                      fillColor: colors.textMuted.withValues(alpha: 0.08),
+                      borderWidth: 1,
+                      entryRadius: 2,
                     ),
                   ],
                 ),
               ),
             ),
-          ],
-
-          // 최근 시험 이력
-          const SizedBox(height: 20),
-          Text('최근 시험 이력', style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
-          ..._sessions.take(5).map((s) => Card(
-            margin: const EdgeInsets.only(bottom: 6),
-            child: ListTile(
-              dense: true,
-              leading: Container(
-                width: 40, height: 40,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  s.predictedLevel ?? '-',
-                  style: TextStyle(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-              title: Text(s.startedAt.substring(0, 10), style: const TextStyle(fontSize: 13)),
-              subtitle: Text(
-                '문법 ${s.grammarScore ?? '-'} · 유창성 ${s.fluencyScore ?? '-'} · 어휘 ${s.vocabularyScore ?? '-'}',
-                style: theme.textTheme.bodySmall?.copyWith(fontSize: 11),
-              ),
-              trailing: Text('${s.totalWords}단어', style: theme.textTheme.bodySmall),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _Legend(color: theme.colorScheme.primary, label: '이번 주'),
+                const SizedBox(width: 16),
+                _Legend(color: colors.textMuted, label: '지난 주'),
+              ],
             ),
-          )),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -206,7 +504,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Column(
       children: [
-        // 레벨 라벨 행
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: _levelOrder.map((code) {
@@ -221,15 +518,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           }).toList(),
         ),
         const SizedBox(height: 4),
-        // 진행 바
         Stack(
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: targetIdx >= 0 ? (targetIdx + 1) / _levelOrder.length : 0,
-                backgroundColor: theme.colorScheme.outline,
-                valueColor: AlwaysStoppedAnimation(colors.success.withValues(alpha: 0.3)),
+                backgroundColor: theme.colorScheme.outline.withValues(alpha: 0.3),
+                valueColor: AlwaysStoppedAnimation(colors.success.withValues(alpha: 0.2)),
                 minHeight: 12,
               ),
             ),
@@ -239,7 +535,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: LinearProgressIndicator(
                   value: (predictedIdx + 1) / _levelOrder.length,
                   backgroundColor: Colors.transparent,
-                  valueColor: AlwaysStoppedAnimation(colors.warning.withValues(alpha: 0.5)),
+                  valueColor: AlwaysStoppedAnimation(colors.warning.withValues(alpha: 0.4)),
                   minHeight: 12,
                 ),
               ),
@@ -268,7 +564,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  /// fl_chart 라인 차트
+  /// 점수 추이 라인 차트
   Widget _buildTrendChart(ThemeData theme, AppColors colors) {
     final grammarSpots = <FlSpot>[];
     final fluencySpots = <FlSpot>[];
@@ -290,7 +586,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           drawVerticalLine: false,
           horizontalInterval: 25,
           getDrawingHorizontalLine: (value) =>
-              FlLine(color: theme.colorScheme.outline.withValues(alpha: 0.3), strokeWidth: 1),
+              FlLine(color: theme.colorScheme.outline.withValues(alpha: 0.2), strokeWidth: 1),
         ),
         titlesData: FlTitlesData(
           leftTitles: AxisTitles(
@@ -319,9 +615,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         borderData: FlBorderData(show: false),
         lineBarsData: [
-          _lineData(grammarSpots, const Color(0xFF818CF8)),
+          _lineData(grammarSpots, const Color(0xFF2563EB)),
           _lineData(fluencySpots, theme.colorScheme.primary),
-          _lineData(vocabSpots, colors.warning),
+          _lineData(vocabSpots, const Color(0xFF7C3AED)),
         ],
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
@@ -345,7 +641,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       belowBarData: BarAreaData(
         show: true,
-        color: color.withValues(alpha: 0.08),
+        color: color.withValues(alpha: 0.06),
       ),
     );
   }
