@@ -8,6 +8,7 @@ const WordCountUtil = {
    */
   count(text) {
     if (!text || !text.trim()) return 0;
-    return text.trim().split(/\s+/).length;
+    const words = text.match(/[a-zA-Z0-9]+(?:[''-][a-zA-Z0-9]+)*/g);
+    return words ? words.length : 0;
   }
 };

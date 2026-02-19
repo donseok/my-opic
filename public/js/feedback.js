@@ -52,7 +52,7 @@ const FeedbackModule = {
         }
       }
     } catch (err) {
-      // 무시
+      showToast('최근 세션 정보를 불러올 수 없습니다', 'error');
     }
 
     // 피드백 없음

@@ -28,18 +28,17 @@ const App = {
       lucide.createIcons();
     }
 
-    // 탭바 이벤트 바인딩
+    // 탭바 클릭 → 해시만 변경 (hashchange가 렌더링 담당)
     document.querySelectorAll('.tab-item').forEach(tabBtn => {
       tabBtn.addEventListener('click', () => {
-        const tab = tabBtn.dataset.tab;
-        this.navigate(tab);
+        window.location.hash = `#${tabBtn.dataset.tab}`;
       });
     });
 
-    // 해시 변경 감지
+    // 해시 변경 감지 → 렌더링
     window.addEventListener('hashchange', () => {
       const hash = window.location.hash.replace('#', '') || 'survey';
-      this.navigate(hash, false);
+      this.renderTab(hash);
     });
 
     // 학습 세션 시작
@@ -47,25 +46,19 @@ const App = {
 
     // 초기 라우팅
     const initialTab = window.location.hash.replace('#', '') || 'survey';
-    this.navigate(initialTab, false);
+    this.renderTab(initialTab);
   },
 
   /**
-   * 탭 네비게이션
+   * 탭 렌더링
    * @param {string} tab - 탭 이름
-   * @param {boolean} updateHash - 해시 업데이트 여부
    */
-  navigate(tab, updateHash = true) {
+  renderTab(tab) {
     if (!this.modules[tab]) {
       tab = 'survey';
     }
 
     this.currentTab = tab;
-
-    // 해시 업데이트
-    if (updateHash) {
-      window.location.hash = `#${tab}`;
-    }
 
     // 탭바 활성 상태 업데이트
     document.querySelectorAll('.tab-item').forEach(btn => {

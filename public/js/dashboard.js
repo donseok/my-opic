@@ -421,7 +421,9 @@ const DashboardModule = {
           apiGet('/feedback/' + s.id).then(fb => {
             FeedbackModule.lastFeedback = fb;
             window.location.hash = '#feedback';
-          }).catch(() => { });
+          }).catch(() => {
+                showToast('피드백을 불러올 수 없습니다', 'error');
+              });
         }
       });
 

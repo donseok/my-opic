@@ -8,10 +8,57 @@ const ExamModule = {
   targetWords: 60,
   isActive: false,    // 시험 진행 중 여부
   sessionId: null,    // 저장된 세션 ID
+  examStartedAt: null,     // 시험 시작 시각 (ISO 8601)
   questionStartTime: null, // 문제별 시작 시간 (실제 소요 시간 계산용)
   _navGuardBound: null,    // 네비게이션 가드 핸들러
   _recordingData: null,    // 녹음 데이터 {base64, duration}
   _recordingTimerInterval: null,
+  _STORAGE_KEY: 'opic_exam_state', // sessionStorage 키
+
+  /**
+   * 시험 상태를 sessionStorage에 저장
+   */
+  _saveState() {
+    try {
+      sessionStorage.setItem(this._STORAGE_KEY, JSON.stringify({
+        questions: this.questions,
+        currentIndex: this.currentIndex,
+        answers: this.answers,
+        targetLevel: this.targetLevel,
+        targetWords: this.targetWords,
+        examStartedAt: this.examStartedAt,
+        isActive: this.isActive
+      }));
+    } catch (e) { /* 저장 실패 무시 */ }
+  },
+
+  /**
+   * sessionStorage에서 시험 상태 복원
+   * @returns {boolean} 복원 성공 여부
+   */
+  _restoreState() {
+    try {
+      const saved = sessionStorage.getItem(this._STORAGE_KEY);
+      if (!saved) return false;
+      const state = JSON.parse(saved);
+      if (!state.isActive || !state.questions?.length) return false;
+      this.questions = state.questions;
+      this.currentIndex = state.currentIndex;
+      this.answers = state.answers;
+      this.targetLevel = state.targetLevel;
+      this.targetWords = state.targetWords;
+      this.examStartedAt = state.examStartedAt;
+      this.isActive = true;
+      return true;
+    } catch (e) { return false; }
+  },
+
+  /**
+   * sessionStorage 시험 상태 삭제
+   */
+  _clearState() {
+    try { sessionStorage.removeItem(this._STORAGE_KEY); } catch (e) { /* 무시 */ }
+  },
 
   /**
    * 모의시험 화면 렌더링
@@ -21,6 +68,13 @@ const ExamModule = {
 
     // 시험 진행 중이면 시험 화면 표시
     if (this.isActive && this.questions.length > 0) {
+      this.renderExamQuestion(container);
+      return;
+    }
+
+    // 새로고침 후 시험 복원 시도
+    if (!this.isActive && this._restoreState()) {
+      this.installNavGuard();
       this.renderExamQuestion(container);
       return;
     }
@@ -134,6 +188,8 @@ const ExamModule = {
       this.answers = [];
       this.isActive = true;
       this.sessionId = null;
+      this.examStartedAt = new Date().toISOString();
+      this._saveState();
 
       // 네비게이션 가드 설치
       this.installNavGuard();
@@ -162,6 +218,7 @@ const ExamModule = {
           TimerUtil.stop();
           TtsUtil.stop();
           this.removeNavGuard();
+          this._clearState();
         }
       }
     };
@@ -535,6 +592,7 @@ const ExamModule = {
     this.answers.push(answerData);
 
     this.currentIndex++;
+    this._saveState();
 
     if (this.currentIndex >= this.questions.length) {
       this.completeExam(container);
@@ -547,7 +605,6 @@ const ExamModule = {
    * 시험 완료 처리
    */
   async completeExam(container) {
-    this.isActive = false;
     TimerUtil.stop();
     TtsUtil.stop();
     this.removeNavGuard();
@@ -594,16 +651,43 @@ const ExamModule = {
 
     container.appendChild(resultDiv);
 
-    // DB에 저장
-    try {
+    // DB에 저장 — 저장 성공 후에만 상태 초기화
+    const saveResult = async () => {
       const result = await apiPost('/exam/sessions', {
         target_level: this.targetLevel,
+        started_at: this.examStartedAt,
         answers: this.answers
       });
       this.sessionId = result.session_id;
+      this.isActive = false;
+      this._clearState();
       showToast('시험 결과가 저장되었습니다', 'success');
+    };
+
+    try {
+      await saveResult();
     } catch (err) {
       showToast('결과 저장 실패: ' + (err.message || ''), 'error');
+
+      // 재시도 버튼 제공
+      const retryBtn = document.createElement('button');
+      retryBtn.className = 'btn btn-primary';
+      retryBtn.style.width = '100%';
+      retryBtn.style.marginTop = '8px';
+      retryBtn.textContent = '💾 결과 저장 재시도';
+      retryBtn.addEventListener('click', async () => {
+        retryBtn.disabled = true;
+        retryBtn.textContent = '저장 중...';
+        try {
+          await saveResult();
+          retryBtn.remove();
+        } catch (retryErr) {
+          showToast('결과 저장 실패: ' + (retryErr.message || ''), 'error');
+          retryBtn.disabled = false;
+          retryBtn.textContent = '💾 결과 저장 재시도';
+        }
+      });
+      container.appendChild(retryBtn);
     }
 
     // AI 피드백 받기 버튼

@@ -51,6 +51,14 @@ router.post('/start', (req, res, next) => {
       time_limit: q.type === 'roleplay' ? 120 : 90
     }));
 
+    if (questions.length < 5) {
+      return res.status(400).json({
+        error: true,
+        code: 'INSUFFICIENT_QUESTIONS',
+        message: `선택한 주제에 문제가 부족합니다 (${questions.length}/5). 주제를 추가로 선택해주세요.`
+      });
+    }
+
     res.json({
       questions,
       total_questions: questions.length,
@@ -66,20 +74,32 @@ router.post('/start', (req, res, next) => {
 router.post('/sessions', (req, res, next) => {
   try {
     const db = getDatabase();
-    const { target_level, answers } = req.body;
+    const { target_level, started_at, answers } = req.body;
 
-    const now = new Date().toISOString();
+    const completedAt = new Date().toISOString();
+    const startedAt = started_at || completedAt;
     let totalWords = 0;
 
+    // 각 답변의 텍스트 길이 제한 (10,000자)
+    const MAX_ANSWER_LENGTH = 10000;
     if (Array.isArray(answers)) {
-      answers.forEach(a => { totalWords += (a.word_count || 0); });
+      for (const a of answers) {
+        if (a.answer_text && a.answer_text.length > MAX_ANSWER_LENGTH) {
+          return res.status(400).json({
+            error: true,
+            code: 'VALIDATION_ERROR',
+            message: `답변 텍스트가 최대 길이(${MAX_ANSWER_LENGTH}자)를 초과했습니다`
+          });
+        }
+        totalWords += (a.word_count || 0);
+      }
     }
 
     // 트랜잭션으로 세션 + 답변 저장
     const saveSession = db.transaction(() => {
       const sessionResult = db.prepare(
         'INSERT INTO exam_sessions (started_at, completed_at, target_level, total_words) VALUES (?, ?, ?, ?)'
-      ).run(now, now, target_level || 'IM1', totalWords);
+      ).run(startedAt, completedAt, target_level || 'IM1', totalWords);
 
       const sessionId = sessionResult.lastInsertRowid;
 

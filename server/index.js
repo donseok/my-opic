@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 const { getDatabase, closeDatabase } = require('./db/database');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -10,8 +11,15 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // CORS 미들웨어 — 모바일 앱에서 API 접근 허용
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['*'];
+
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes('*') || ALLOWED_ORIGINS.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin || '*');
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') {
@@ -23,6 +31,16 @@ app.use((req, res, next) => {
 // 미들웨어 설정 — 대용량 오디오 데이터를 위해 10MB 제한
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// API 요청 제한 (분당 100회)
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: true, code: 'RATE_LIMIT', message: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }
+});
+app.use('/api/', apiLimiter);
 
 // 정적 파일 서빙 (public/ 디렉토리)
 app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -72,6 +90,11 @@ app.use(errorHandler);
 // 서버 시작
 app.listen(PORT, () => {
   console.log(`[서버] OPIc Master 실행 중: http://localhost:${PORT}`);
+
+  // Gemini API 키 설정 확인
+  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_api_key_here') {
+    console.warn('[경고] GEMINI_API_KEY가 설정되지 않았습니다. AI 피드백 기능이 작동하지 않습니다.');
+  }
 });
 
 // 프로세스 종료 시 DB 연결 정리

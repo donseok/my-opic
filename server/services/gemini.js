@@ -2,8 +2,8 @@
 // OPIc 답변 평가 + 음성 분석을 위한 Gemini API 프록시
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = 'gemini-2.5-flash';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 // OPIc 채점관 시스템 프롬프트
 const SYSTEM_PROMPT = `당신은 OPIc(Oral Proficiency Interview - computer) 시험 전문 채점관입니다.
@@ -114,7 +114,10 @@ async function evaluateAnswers(answers, targetLevel) {
   try {
     const response = await fetch(GEMINI_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': GEMINI_API_KEY
+      },
       body: JSON.stringify(requestBody),
       signal: controller.signal
     });
@@ -135,19 +138,25 @@ async function evaluateAnswers(answers, targetLevel) {
       throw new Error('Gemini API 응답이 비어있습니다');
     }
 
-    // JSON 파싱
-    const result = JSON.parse(text);
+    // 마크다운 코드블록 래퍼 제거 후 JSON 파싱
+    const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+    const result = JSON.parse(cleaned);
 
-    // 필수 필드 검증
-    if (!result.predicted_level || result.grammar_score === undefined) {
+    // 필수 필드 검증 및 기본값 보정
+    if (!result.predicted_level) {
       throw new Error('Gemini API 응답 형식이 올바르지 않습니다');
     }
 
-    // 신규 필드 기본값 보장
-    result.pronunciation_score = result.pronunciation_score || 0;
-    result.content_organization_score = result.content_organization_score || 0;
-
-    return result;
+    return {
+      predicted_level: result.predicted_level,
+      grammar_score: Number(result.grammar_score) || 0,
+      fluency_score: Number(result.fluency_score) || 0,
+      vocabulary_score: Number(result.vocabulary_score) || 0,
+      pronunciation_score: Number(result.pronunciation_score) || 0,
+      content_organization_score: Number(result.content_organization_score) || 0,
+      strengths: Array.isArray(result.strengths) ? result.strengths.slice(0, 3) : [],
+      improvements: Array.isArray(result.improvements) ? result.improvements.slice(0, 3) : []
+    };
   } catch (err) {
     clearTimeout(timeout);
 

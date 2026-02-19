@@ -39,47 +39,21 @@ const LevelModule = {
     subtitle.textContent = '현재 실력 레벨과 목표 레벨을 선택하세요.';
     container.appendChild(subtitle);
 
-    // 현재 레벨 섹션
-    const currentSection = document.createElement('div');
-    currentSection.className = 'level-section';
+    // 통합 레벨 리스트
+    const levelSection = document.createElement('div');
+    levelSection.className = 'level-section';
 
-    const currentTitle = document.createElement('div');
-    currentTitle.className = 'level-section-title';
-    currentTitle.textContent = '📍 현재 레벨';
-    currentSection.appendChild(currentTitle);
-
-    const currentList = document.createElement('div');
-    currentList.className = 'level-list';
-    currentList.id = 'current-level-list';
+    const levelList = document.createElement('div');
+    levelList.className = 'level-list';
+    levelList.id = 'level-list';
 
     this.levels.forEach(level => {
-      const item = this.createLevelItem(level, 'current');
-      currentList.appendChild(item);
+      const item = this.createLevelItem(level);
+      levelList.appendChild(item);
     });
 
-    currentSection.appendChild(currentList);
-    container.appendChild(currentSection);
-
-    // 목표 레벨 섹션
-    const targetSection = document.createElement('div');
-    targetSection.className = 'level-section';
-
-    const targetTitle = document.createElement('div');
-    targetTitle.className = 'level-section-title';
-    targetTitle.textContent = '🎯 목표 레벨';
-    targetSection.appendChild(targetTitle);
-
-    const targetList = document.createElement('div');
-    targetList.className = 'level-list';
-    targetList.id = 'target-level-list';
-
-    this.levels.forEach(level => {
-      const item = this.createLevelItem(level, 'target');
-      targetList.appendChild(item);
-    });
-
-    targetSection.appendChild(targetList);
-    container.appendChild(targetSection);
+    levelSection.appendChild(levelList);
+    container.appendChild(levelSection);
 
     // 갭 분석
     const gapEl = document.createElement('div');
@@ -100,21 +74,12 @@ const LevelModule = {
   },
 
   /**
-   * 레벨 아이템 생성
+   * 레벨 아이템 생성 (통합: 현재/목표 뱃지 포함)
    */
-  createLevelItem(level, type) {
+  createLevelItem(level) {
     const item = document.createElement('div');
     item.className = 'level-item';
     item.dataset.code = level.code;
-    item.dataset.type = type;
-
-    // 현재 선택 상태 반영
-    if (type === 'current' && this.currentLevel === level.code) {
-      item.classList.add('selected');
-    }
-    if (type === 'target' && this.targetLevel === level.code) {
-      item.classList.add('selected');
-    }
 
     const info = document.createElement('div');
     info.className = 'level-info';
@@ -130,18 +95,37 @@ const LevelModule = {
     info.appendChild(code);
     info.appendChild(name);
 
+    const actions = document.createElement('div');
+    actions.className = 'level-actions';
+
     const words = document.createElement('span');
     words.className = 'level-words';
     words.textContent = level.min_words + '단어+';
 
-    item.appendChild(info);
-    item.appendChild(words);
-
-    // 클릭 이벤트
-    item.addEventListener('click', () => {
-      if (item.classList.contains('disabled')) return;
-      this.selectLevel(level.code, type);
+    const currentBtn = document.createElement('button');
+    currentBtn.className = 'level-badge level-badge-current';
+    currentBtn.textContent = '현재';
+    if (this.currentLevel === level.code) currentBtn.classList.add('active');
+    currentBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.selectLevel(level.code, 'current');
     });
+
+    const targetBtn = document.createElement('button');
+    targetBtn.className = 'level-badge level-badge-target';
+    targetBtn.textContent = '목표';
+    if (this.targetLevel === level.code) targetBtn.classList.add('active');
+    targetBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.selectLevel(level.code, 'target');
+    });
+
+    actions.appendChild(words);
+    actions.appendChild(currentBtn);
+    actions.appendChild(targetBtn);
+
+    item.appendChild(info);
+    item.appendChild(actions);
 
     return item;
   },
@@ -152,39 +136,44 @@ const LevelModule = {
   selectLevel(code, type) {
     if (type === 'current') {
       this.currentLevel = code;
-      // 현재 레벨 UI 업데이트
-      document.querySelectorAll('#current-level-list .level-item').forEach(el => {
-        el.classList.toggle('selected', el.dataset.code === code);
-      });
-      // 목표 레벨 비활성화 업데이트
+      this.updateBadges();
       this.updateTargetDisabled();
     } else {
       this.targetLevel = code;
-      // 목표 레벨 UI 업데이트
-      document.querySelectorAll('#target-level-list .level-item').forEach(el => {
-        el.classList.toggle('selected', el.dataset.code === code);
-      });
+      this.updateBadges();
     }
-
     this.renderGapAnalysis();
   },
 
   /**
-   * 목표 레벨에서 현재 레벨 미만 비활성화
+   * 뱃지 활성 상태 업데이트
+   */
+  updateBadges() {
+    document.querySelectorAll('#level-list .level-badge-current').forEach(btn => {
+      btn.classList.toggle('active', btn.closest('.level-item').dataset.code === this.currentLevel);
+    });
+    document.querySelectorAll('#level-list .level-badge-target').forEach(btn => {
+      btn.classList.toggle('active', btn.closest('.level-item').dataset.code === this.targetLevel);
+    });
+  },
+
+  /**
+   * 목표 레벨에서 현재 레벨 이하 비활성화
    */
   updateTargetDisabled() {
     const currentIdx = this.levels.findIndex(l => l.code === this.currentLevel);
 
-    document.querySelectorAll('#target-level-list .level-item').forEach(el => {
+    document.querySelectorAll('#level-list .level-item').forEach(el => {
       const levelIdx = this.levels.findIndex(l => l.code === el.dataset.code);
-      if (currentIdx >= 0 && levelIdx < currentIdx) {
-        el.classList.add('disabled');
-        el.classList.remove('selected');
+      const targetBtn = el.querySelector('.level-badge-target');
+      if (currentIdx >= 0 && levelIdx <= currentIdx) {
+        targetBtn.classList.add('disabled');
         if (this.targetLevel === el.dataset.code) {
           this.targetLevel = null;
+          targetBtn.classList.remove('active');
         }
       } else {
-        el.classList.remove('disabled');
+        targetBtn.classList.remove('disabled');
       }
     });
   },
