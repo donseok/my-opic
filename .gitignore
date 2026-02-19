@@ -1,4 +1,7 @@
 node_modules/
 .env
 opic_master.db
+opic_master.db-shm
+opic_master.db-wal
+~$*
 .claude/
