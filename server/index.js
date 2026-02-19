@@ -89,15 +89,19 @@ app.get('*', (req, res) => {
 // 에러 핸들러
 app.use(errorHandler);
 
-// 서버 시작
-app.listen(PORT, () => {
-  console.log(`[서버] OPIc Master 실행 중: http://localhost:${PORT}`);
+// 서버 시작 (Vercel 환경에서는 listen 생략)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`[서버] OPIc Master 실행 중: http://localhost:${PORT}`);
 
-  // Gemini API 키 설정 확인
-  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_api_key_here') {
-    console.warn('[경고] GEMINI_API_KEY가 설정되지 않았습니다. AI 피드백 기능이 작동하지 않습니다.');
-  }
-});
+    // Gemini API 키 설정 확인
+    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_api_key_here') {
+      console.warn('[경고] GEMINI_API_KEY가 설정되지 않았습니다. AI 피드백 기능이 작동하지 않습니다.');
+    }
+  });
+}
+
+module.exports = app;
 
 // 프로세스 종료 시 DB 연결 정리
 process.on('SIGINT', () => {

@@ -5,8 +5,10 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
-// DB 파일 경로 (프로젝트 루트)
-const DB_PATH = path.join(__dirname, '..', '..', 'opic_master.db');
+// DB 파일 경로 (Vercel: /tmp, 로컬: 프로젝트 루트)
+const DB_PATH = process.env.VERCEL
+  ? '/tmp/opic_master.db'
+  : path.join(__dirname, '..', '..', 'opic_master.db');
 const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
 const SEED_PATH = path.join(__dirname, 'seed.sql');
 
