@@ -31,14 +31,59 @@ function getDatabase() {
   // 마이그레이션: ai_feedbacks에 신규 컬럼 추가
   try {
     const cols = db.prepare("PRAGMA table_info(ai_feedbacks)").all().map(c => c.name);
-    if (!cols.includes('pronunciation_score')) {
-      db.exec('ALTER TABLE ai_feedbacks ADD COLUMN pronunciation_score INTEGER');
-      console.log('[DB] 마이그레이션: ai_feedbacks.pronunciation_score 추가');
+    // 구 컬럼명 → 신 컬럼명 마이그레이션
+    if (!cols.includes('task_completion_score')) {
+      db.exec('ALTER TABLE ai_feedbacks ADD COLUMN task_completion_score INTEGER');
+      console.log('[DB] 마이그레이션: ai_feedbacks.task_completion_score 추가');
+      // 기존 pronunciation_score 데이터가 있으면 복사
+      if (cols.includes('pronunciation_score')) {
+        db.exec('UPDATE ai_feedbacks SET task_completion_score = pronunciation_score WHERE task_completion_score IS NULL');
+      }
     }
-    if (!cols.includes('content_organization_score')) {
-      db.exec('ALTER TABLE ai_feedbacks ADD COLUMN content_organization_score INTEGER');
-      console.log('[DB] 마이그레이션: ai_feedbacks.content_organization_score 추가');
+    if (!cols.includes('content_delivery_score')) {
+      db.exec('ALTER TABLE ai_feedbacks ADD COLUMN content_delivery_score INTEGER');
+      console.log('[DB] 마이그레이션: ai_feedbacks.content_delivery_score 추가');
+      if (cols.includes('content_organization_score')) {
+        db.exec('UPDATE ai_feedbacks SET content_delivery_score = content_organization_score WHERE content_delivery_score IS NULL');
+      }
     }
+  } catch (e) {
+    // 이미 존재하면 무시
+  }
+
+  // 마이그레이션: skill_assessments에 신규 컬럼 추가
+  try {
+    const skillCols = db.prepare("PRAGMA table_info(skill_assessments)").all().map(c => c.name);
+    if (!skillCols.includes('task_completion_score')) {
+      db.exec('ALTER TABLE skill_assessments ADD COLUMN task_completion_score INTEGER DEFAULT 0');
+      console.log('[DB] 마이그레이션: skill_assessments.task_completion_score 추가');
+      if (skillCols.includes('pronunciation_score')) {
+        db.exec('UPDATE skill_assessments SET task_completion_score = pronunciation_score WHERE task_completion_score IS NULL');
+      }
+    }
+    if (!skillCols.includes('content_delivery_score')) {
+      db.exec('ALTER TABLE skill_assessments ADD COLUMN content_delivery_score INTEGER DEFAULT 0');
+      console.log('[DB] 마이그레이션: skill_assessments.content_delivery_score 추가');
+      if (skillCols.includes('content_organization_score')) {
+        db.exec('UPDATE skill_assessments SET content_delivery_score = content_organization_score WHERE content_delivery_score IS NULL');
+      }
+    }
+  } catch (e) {
+    // 이미 존재하면 무시
+  }
+
+  // 마이그레이션: topic_vocabulary 테이블 추가
+  try {
+    db.exec(`CREATE TABLE IF NOT EXISTS topic_vocabulary (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      topic_id INTEGER NOT NULL,
+      word TEXT NOT NULL,
+      meaning_ko TEXT NOT NULL,
+      example_sentence TEXT,
+      category TEXT DEFAULT 'expression',
+      FOREIGN KEY (topic_id) REFERENCES survey_topics(id)
+    )`);
+    db.exec('CREATE INDEX IF NOT EXISTS idx_topic_vocabulary_topic ON topic_vocabulary(topic_id)');
   } catch (e) {
     // 이미 존재하면 무시
   }
@@ -64,7 +109,15 @@ function getDatabase() {
         const newTipCount = db.prepare('SELECT COUNT(*) as count FROM survey_tips').get().count;
         console.log(`[DB] 서베이 팁 보충 완료: ${tipCount} → ${newTipCount}개`);
       } else {
-        console.log('[DB] 기존 데이터 확인 — 시드 생략');
+        // topic_vocabulary 보충
+        const vocabCount = db.prepare('SELECT COUNT(*) as count FROM topic_vocabulary').get().count;
+        if (vocabCount < 100) {
+          db.exec(seed);
+          const newVocabCount = db.prepare('SELECT COUNT(*) as count FROM topic_vocabulary').get().count;
+          console.log(`[DB] 단어장 보충 완료: ${vocabCount} → ${newVocabCount}개`);
+        } else {
+          console.log('[DB] 기존 데이터 확인 — 시드 생략');
+        }
       }
     }
   }

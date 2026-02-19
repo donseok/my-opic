@@ -15,8 +15,8 @@ router.get('/stats', (req, res, next) => {
         ROUND(AVG(grammar_score)) as avg_grammar,
         ROUND(AVG(fluency_score)) as avg_fluency,
         ROUND(AVG(vocabulary_score)) as avg_vocabulary,
-        ROUND(AVG(pronunciation_score)) as avg_pronunciation,
-        ROUND(AVG(content_organization_score)) as avg_organization
+        ROUND(AVG(task_completion_score)) as avg_task_completion,
+        ROUND(AVG(content_delivery_score)) as avg_content_delivery
        FROM ai_feedbacks`
     ).get();
 
@@ -31,8 +31,8 @@ router.get('/stats', (req, res, next) => {
       avg_grammar: avgScores?.avg_grammar || 0,
       avg_fluency: avgScores?.avg_fluency || 0,
       avg_vocabulary: avgScores?.avg_vocabulary || 0,
-      avg_pronunciation: avgScores?.avg_pronunciation || 0,
-      avg_organization: avgScores?.avg_organization || 0,
+      avg_task_completion: avgScores?.avg_task_completion || 0,
+      avg_content_delivery: avgScores?.avg_content_delivery || 0,
       latest_level: latestFeedback?.predicted_level || null,
       current_level: settings?.current_level || null,
       target_level: settings?.target_level || null
@@ -55,8 +55,8 @@ router.get('/trends', (req, res, next) => {
         af.grammar_score,
         af.fluency_score,
         af.vocabulary_score,
-        af.pronunciation_score,
-        af.content_organization_score
+        af.task_completion_score,
+        af.content_delivery_score
        FROM exam_sessions es
        JOIN ai_feedbacks af ON es.id = af.session_id
        ORDER BY es.started_at ASC`
@@ -79,8 +79,8 @@ router.get('/skills', (req, res, next) => {
         ROUND(AVG(af.grammar_score)) as grammar,
         ROUND(AVG(af.vocabulary_score)) as vocabulary,
         ROUND(AVG(af.fluency_score)) as fluency,
-        ROUND(AVG(af.pronunciation_score)) as pronunciation,
-        ROUND(AVG(af.content_organization_score)) as organization
+        ROUND(AVG(af.task_completion_score)) as task_completion,
+        ROUND(AVG(af.content_delivery_score)) as content_delivery
        FROM ai_feedbacks af
        JOIN exam_sessions es ON af.session_id = es.id
        WHERE es.started_at >= date('now', '-7 days')`
@@ -92,8 +92,8 @@ router.get('/skills', (req, res, next) => {
         ROUND(AVG(af.grammar_score)) as grammar,
         ROUND(AVG(af.vocabulary_score)) as vocabulary,
         ROUND(AVG(af.fluency_score)) as fluency,
-        ROUND(AVG(af.pronunciation_score)) as pronunciation,
-        ROUND(AVG(af.content_organization_score)) as organization
+        ROUND(AVG(af.task_completion_score)) as task_completion,
+        ROUND(AVG(af.content_delivery_score)) as content_delivery
        FROM ai_feedbacks af
        JOIN exam_sessions es ON af.session_id = es.id
        WHERE es.started_at >= date('now', '-14 days')
@@ -105,15 +105,15 @@ router.get('/skills', (req, res, next) => {
         grammar: thisWeek?.grammar || 0,
         vocabulary: thisWeek?.vocabulary || 0,
         fluency: thisWeek?.fluency || 0,
-        pronunciation: thisWeek?.pronunciation || 0,
-        organization: thisWeek?.organization || 0
+        task_completion: thisWeek?.task_completion || 0,
+        content_delivery: thisWeek?.content_delivery || 0
       },
       last_week: {
         grammar: lastWeek?.grammar || 0,
         vocabulary: lastWeek?.vocabulary || 0,
         fluency: lastWeek?.fluency || 0,
-        pronunciation: lastWeek?.pronunciation || 0,
-        organization: lastWeek?.organization || 0
+        task_completion: lastWeek?.task_completion || 0,
+        content_delivery: lastWeek?.content_delivery || 0
       }
     });
   } catch (err) {

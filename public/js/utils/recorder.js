@@ -11,6 +11,7 @@ const RecorderUtil = {
   startTime: null,
   timerInterval: null,
   visualizeInterval: null,
+  amplitudeHistory: [],
 
   /**
    * MediaRecorder API 지원 여부 확인
@@ -61,6 +62,7 @@ const RecorderUtil = {
 
     // MediaRecorder 시작
     this.audioChunks = [];
+    this.amplitudeHistory = [];
     try {
       this.mediaRecorder = new MediaRecorder(this.stream, { mimeType: 'audio/webm' });
     } catch (err) {
@@ -86,7 +88,11 @@ const RecorderUtil = {
       this.visualizeInterval = setInterval(() => {
         if (!this.isRecording || !this.analyserNode) return;
         this.analyserNode.getByteFrequencyData(dataArray);
-        onVisualize(Array.from(dataArray));
+        const freqArray = Array.from(dataArray);
+        // 평균 진폭 수집 (speech-analysis용)
+        const avg = freqArray.reduce((sum, v) => sum + v, 0) / freqArray.length;
+        this.amplitudeHistory.push(avg);
+        onVisualize(freqArray);
       }, 50); // 50ms 간격으로 시각화 업데이트
     }
 

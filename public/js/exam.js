@@ -12,6 +12,7 @@ const ExamModule = {
   questionStartTime: null, // 문제별 시작 시간 (실제 소요 시간 계산용)
   _navGuardBound: null,    // 네비게이션 가드 핸들러
   _recordingData: null,    // 녹음 데이터 {base64, duration}
+  _speechMetrics: null,    // 음성 분석 메트릭
   _recordingTimerInterval: null,
   _STORAGE_KEY: 'opic_exam_state', // sessionStorage 키
 
@@ -194,11 +195,69 @@ const ExamModule = {
       // 네비게이션 가드 설치
       this.installNavGuard();
 
+      // 시험 모드 진입 (헤더/탭바 숨김)
+      document.body.classList.add('exam-mode');
+
       const container = document.getElementById('app-content');
-      this.showPrepTimer(container);
+      this.showInstructions(container);
     } catch (err) {
       showToast('시험 시작에 실패했습니다: ' + (err.message || ''), 'error');
     }
+  },
+
+  /**
+   * 시험 안내 화면 표시
+   */
+  showInstructions(container) {
+    container.replaceChildren();
+
+    const instructions = document.createElement('div');
+    instructions.className = 'exam-instructions';
+
+    const icon = document.createElement('div');
+    icon.className = 'exam-instructions-icon';
+    icon.textContent = '🎯';
+    instructions.appendChild(icon);
+
+    const title = document.createElement('h2');
+    title.className = 'exam-instructions-title';
+    title.textContent = 'OPIc 모의시험';
+    instructions.appendChild(title);
+
+    const rules = [
+      '총 ' + this.questions.length + '개 문제가 출제됩니다',
+      '각 문제마다 8초 준비 시간이 주어집니다',
+      '답변 시간은 문제 유형에 따라 60~120초입니다',
+      '타이핑 또는 음성 녹음으로 답변할 수 있습니다',
+      '시험 중 다른 탭으로 이동할 수 없습니다'
+    ];
+
+    const ruleList = document.createElement('div');
+    ruleList.className = 'exam-rules';
+    rules.forEach(rule => {
+      const item = document.createElement('div');
+      item.className = 'exam-rule-item';
+      item.textContent = rule;
+      ruleList.appendChild(item);
+    });
+    instructions.appendChild(ruleList);
+
+    const info = document.createElement('div');
+    info.className = 'exam-instructions-info';
+    info.textContent = '목표 레벨: ' + this.targetLevel + ' · 목표 단어: ' + this.targetWords + '단어';
+    instructions.appendChild(info);
+
+    const startBtn = document.createElement('button');
+    startBtn.className = 'btn btn-primary';
+    startBtn.style.padding = '14px 48px';
+    startBtn.style.fontSize = '16px';
+    startBtn.textContent = '시험 시작';
+    startBtn.addEventListener('click', () => {
+      this.showPrepTimer(container);
+    });
+    instructions.appendChild(startBtn);
+
+    container.appendChild(instructions);
   },
 
   /**
@@ -219,6 +278,7 @@ const ExamModule = {
           TtsUtil.stop();
           this.removeNavGuard();
           this._clearState();
+          document.body.classList.remove('exam-mode');
         }
       }
     };
@@ -236,6 +296,21 @@ const ExamModule = {
   },
 
   /**
+   * "답변을 시작하세요!" 플래시 프롬프트 (1초)
+   */
+  _showBeginPrompt(container, onComplete) {
+    container.replaceChildren();
+    const prompt = document.createElement('div');
+    prompt.className = 'exam-begin-prompt';
+    prompt.textContent = '답변을 시작하세요!';
+    container.appendChild(prompt);
+    TimerUtil.playBeep(600, 300);
+    setTimeout(() => {
+      if (onComplete) onComplete();
+    }, 1000);
+  },
+
+  /**
    * 준비 타이머 표시 (8초) + 문제 미리보기 + TTS 자동 읽기
    */
   showPrepTimer(container) {
@@ -243,7 +318,10 @@ const ExamModule = {
 
     TimerUtil.startPrepTimer(container, 8, () => {
       TtsUtil.stop();
-      this.renderExamQuestion(container);
+      // "답변을 시작하세요!" 플래시 프롬프트
+      this._showBeginPrompt(container, () => {
+        this.renderExamQuestion(container);
+      });
     });
 
     // 준비 타이머 아래에 문제 미리보기 추가
@@ -291,6 +369,18 @@ const ExamModule = {
     this.questionStartTime = Date.now();
 
     const timeLimit = q.time_limit || 90;
+
+    // 진행 도트
+    const stepsDiv = document.createElement('div');
+    stepsDiv.className = 'exam-steps';
+    for (let i = 0; i < this.questions.length; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'exam-step-dot';
+      if (i < this.currentIndex) dot.classList.add('completed');
+      if (i === this.currentIndex) dot.classList.add('current');
+      stepsDiv.appendChild(dot);
+    }
+    container.appendChild(stepsDiv);
 
     // 문제 번호
     const progress = document.createElement('div');
@@ -404,6 +494,15 @@ const ExamModule = {
       recStatus.textContent = '버튼을 눌러 녹음을 시작하세요';
       recorderDiv.appendChild(recStatus);
 
+      // STT 상태 뱃지
+      if (typeof SttUtil !== 'undefined' && SttUtil.isSupported()) {
+        const sttBadge = document.createElement('div');
+        sttBadge.className = 'stt-badge hidden';
+        sttBadge.id = 'stt-badge';
+        sttBadge.textContent = '🎤 음성→텍스트 변환 중';
+        recorderDiv.appendChild(sttBadge);
+      }
+
       const recTimer = document.createElement('div');
       recTimer.className = 'record-timer';
       recTimer.id = 'exam-record-timer';
@@ -488,6 +587,12 @@ const ExamModule = {
           if (fillEl) fillEl.classList.add('warning');
           if (infoEl) infoEl.classList.add('warning');
         }
+        // 비프음 경고
+        if (remaining === 30) {
+          TimerUtil.playBeep(800, 200);
+        } else if (remaining === 10) {
+          TimerUtil.playDoubleBeep(900);
+        }
       },
       () => this.nextQuestion(container)
     );
@@ -528,14 +633,60 @@ const ExamModule = {
         if (btn) btn.classList.add('recording');
         if (status) status.textContent = '녹음 중... 다시 누르면 중지됩니다';
         this._recordingData = null;
+
+        // STT 동시 시작
+        if (typeof SttUtil !== 'undefined' && SttUtil.isSupported()) {
+          const textarea = document.getElementById('exam-answer');
+          SttUtil.start((transcript) => {
+            if (textarea) textarea.value = transcript;
+            // 단어 수 업데이트
+            if (typeof WordCountUtil !== 'undefined') {
+              const wc = WordCountUtil.count(transcript);
+              const pct = Math.min(100, Math.round(wc / this.targetWords * 100));
+              const wordInfoEl = document.getElementById('exam-word-info');
+              if (wordInfoEl) {
+                wordInfoEl.replaceChildren();
+                const s1 = document.createElement('span');
+                s1.textContent = wc + ' 단어';
+                const s2 = document.createElement('span');
+                s2.textContent = wc + '/' + this.targetWords + ' 단어 — ' + pct + '% 달성';
+                wordInfoEl.appendChild(s1);
+                wordInfoEl.appendChild(s2);
+              }
+              const wordFillEl = document.getElementById('word-fill');
+              if (wordFillEl) wordFillEl.style.width = pct + '%';
+            }
+          });
+          // STT 활성 표시
+          const sttBadge = document.getElementById('stt-badge');
+          if (sttBadge) sttBadge.classList.remove('hidden');
+        }
       } catch (err) {
         showToast('마이크 접근 권한이 필요합니다', 'error');
       }
     } else {
       // 녹음 중지
       try {
+        // STT 중지
+        if (typeof SttUtil !== 'undefined' && SttUtil.isListening) {
+          const finalText = SttUtil.stop();
+          const textarea = document.getElementById('exam-answer');
+          if (textarea && finalText) textarea.value = finalText;
+          const sttBadge = document.getElementById('stt-badge');
+          if (sttBadge) sttBadge.classList.add('hidden');
+        }
+
         const data = await RecorderUtil.stop();
         this._recordingData = data;
+        // 음성 분석 데이터 수집
+        if (typeof SpeechAnalysisUtil !== 'undefined') {
+          const textarea = document.getElementById('exam-answer');
+          const transcript = textarea ? textarea.value : '';
+          this._speechMetrics = SpeechAnalysisUtil.analyze(transcript, data.duration);
+          const pauseData = SpeechAnalysisUtil.analyzePauses(RecorderUtil.amplitudeHistory, 50);
+          this._speechMetrics.pause_count = pauseData.pause_count;
+          this._speechMetrics.total_pause_ms = pauseData.total_pause_ms;
+        }
         if (btn) btn.classList.remove('recording');
         if (status) status.textContent = '녹음 완료 (' + RecorderUtil.formatTime(data.duration) + ')';
         // 파형 리셋
@@ -589,6 +740,12 @@ const ExamModule = {
       this._recordingData = null;
     }
 
+    // 음성 분석 메트릭 첨부
+    if (this._speechMetrics) {
+      answerData.speech_metrics = this._speechMetrics;
+      this._speechMetrics = null;
+    }
+
     this.answers.push(answerData);
 
     this.currentIndex++;
@@ -608,6 +765,8 @@ const ExamModule = {
     TimerUtil.stop();
     TtsUtil.stop();
     this.removeNavGuard();
+    // 시험 모드 해제
+    document.body.classList.remove('exam-mode');
 
     container.replaceChildren();
 

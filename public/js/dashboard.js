@@ -211,7 +211,7 @@ const DashboardModule = {
     this.radarChart = new Chart(canvas, {
       type: 'radar',
       data: {
-        labels: ['Grammar', 'Vocabulary', 'Fluency', 'Pronunciation', 'Organization'],
+        labels: ['Grammar', 'Vocabulary', 'Fluency', 'Task Completion', 'Content Delivery'],
         datasets: [
           {
             label: '이번 주',
@@ -219,8 +219,8 @@ const DashboardModule = {
               skills.this_week.grammar,
               skills.this_week.vocabulary,
               skills.this_week.fluency,
-              skills.this_week.pronunciation,
-              skills.this_week.organization
+              skills.this_week.task_completion,
+              skills.this_week.content_delivery
             ],
             borderColor: '#0284C7',
             backgroundColor: 'rgba(2, 132, 199, 0.15)',
@@ -233,8 +233,8 @@ const DashboardModule = {
               skills.last_week.grammar,
               skills.last_week.vocabulary,
               skills.last_week.fluency,
-              skills.last_week.pronunciation,
-              skills.last_week.organization
+              skills.last_week.task_completion,
+              skills.last_week.content_delivery
             ],
             borderColor: '#94A3B8',
             backgroundColor: 'rgba(148, 163, 184, 0.1)',

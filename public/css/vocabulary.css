@@ -1,0 +1,205 @@
+/* 단어장 모듈 스타일 */
+
+.vocab-mode-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  background: rgba(226, 232, 240, 0.4);
+  padding: 4px;
+  border-radius: var(--radius-btn);
+}
+
+.vocab-content {
+  animation: fadeIn 0.3s ease;
+}
+
+.vocab-progress {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* 플래시카드 */
+.flashcard-wrapper {
+  perspective: 1000px;
+  margin-bottom: 20px;
+}
+
+.flashcard {
+  position: relative;
+  width: 100%;
+  min-height: 220px;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+}
+
+.flashcard.flipped {
+  transform: rotateY(180deg);
+}
+
+.flashcard-face {
+  position: absolute;
+  width: 100%;
+  min-height: 220px;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 20px;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-color);
+}
+
+.flashcard-front {
+  background: var(--bg-card);
+}
+
+.flashcard-back {
+  background: var(--gradient-accent-soft);
+  border-color: rgba(2, 132, 199, 0.15);
+  transform: rotateY(180deg);
+}
+
+.flashcard-word {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.flashcard-category {
+  display: inline-block;
+  padding: 3px 10px;
+  background: rgba(2, 132, 199, 0.06);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.flashcard-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 12px;
+}
+
+.flashcard-meaning {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.flashcard-example {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.7;
+  font-style: italic;
+  max-width: 320px;
+}
+
+/* 카드 액션 버튼 */
+.vocab-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.vocab-btn {
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-btn);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.vocab-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.vocab-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.vocab-shuffle {
+  width: 100%;
+  margin-top: 4px;
+}
+
+/* 리스트 모드 */
+.vocab-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vocab-list-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+}
+
+.vocab-list-item:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+}
+
+.vocab-list-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.vocab-list-word {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.vocab-tts-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 4px;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.vocab-tts-btn:hover {
+  opacity: 1;
+}
+
+.vocab-list-meaning {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.vocab-list-example {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.6;
+}

@@ -369,3 +369,113 @@
 .mode-btn:hover:not(.active) {
   color: var(--text-primary);
 }
+
+/* ===== 실전 시뮬레이션 모드 ===== */
+
+/* 시험 모드: 헤더/탭바 숨김 */
+body.exam-mode .app-header,
+body.exam-mode .tab-bar {
+  display: none;
+}
+
+body.exam-mode .app-content {
+  padding-bottom: 20px;
+  min-height: 100vh;
+}
+
+/* 시험 안내 화면 */
+.exam-instructions {
+  text-align: center;
+  padding: 48px 20px;
+  max-width: 400px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease;
+}
+
+.exam-instructions-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.exam-instructions-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 24px;
+  letter-spacing: -0.5px;
+}
+
+.exam-rules {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.exam-rule-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.exam-rule-item::before {
+  content: '•';
+  color: var(--accent);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.exam-instructions-info {
+  padding: 10px 16px;
+  background: rgba(2, 132, 199, 0.06);
+  border-radius: var(--radius-btn);
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 28px;
+}
+
+/* 진행 도트 */
+.exam-steps {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.exam-step-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(226, 232, 240, 0.6);
+  border: 2px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.exam-step-dot.completed {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.exam-step-dot.current {
+  background: var(--bg-card);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
+  transform: scale(1.2);
+}
+
+/* "답변을 시작하세요!" 플래시 프롬프트 */
+.exam-begin-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  font-size: 28px;
+  font-weight: 800;
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: scaleIn 0.3s ease;
+}

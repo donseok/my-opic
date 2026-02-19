@@ -285,6 +285,19 @@ CREATE TABLE IF NOT EXISTS survey_tips (
     FOREIGN KEY (topic_id) REFERENCES survey_topics(id)
 );
 
+-- 주제별 핵심 단어/표현 테이블
+CREATE TABLE IF NOT EXISTS topic_vocabulary (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    topic_id INTEGER NOT NULL,
+    word TEXT NOT NULL,
+    meaning_ko TEXT NOT NULL,
+    example_sentence TEXT,
+    category TEXT DEFAULT 'expression',
+    FOREIGN KEY (topic_id) REFERENCES survey_topics(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_topic_vocabulary_topic ON topic_vocabulary(topic_id);
+
 -- 신규 인덱스 (Feature 1~3)
 CREATE INDEX IF NOT EXISTS idx_daily_attendance_date ON daily_attendance(check_date);
 CREATE INDEX IF NOT EXISTS idx_point_history_created ON point_history(created_at);

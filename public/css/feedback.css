@@ -119,11 +119,11 @@
 .score-vocab .score-value { color: #7C3AED; }
 .score-vocab .score-bar-fill { background: linear-gradient(90deg, #7C3AED, #8B5CF6); }
 
-.score-pronunciation .score-value { color: #059669; }
-.score-pronunciation .score-bar-fill { background: linear-gradient(90deg, #059669, #10B981); }
+.score-task-completion .score-value { color: #059669; }
+.score-task-completion .score-bar-fill { background: linear-gradient(90deg, #059669, #10B981); }
 
-.score-organization .score-value { color: #D97706; }
-.score-organization .score-bar-fill { background: linear-gradient(90deg, #D97706, #F59E0B); }
+.score-content-delivery .score-value { color: #D97706; }
+.score-content-delivery .score-bar-fill { background: linear-gradient(90deg, #D97706, #F59E0B); }
 
 /* 잘한 점 / 개선할 점 */
 .feedback-cards {
@@ -235,6 +235,68 @@
 .feedback-error-icon {
   font-size: 56px;
   margin-bottom: 16px;
+}
+
+/* Speaking 분석 메트릭 */
+.speaking-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.speaking-metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 14px;
+  box-shadow: var(--shadow-card);
+}
+
+.speaking-metric-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.speaking-metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.speaking-metric-key {
+  color: var(--text-secondary);
+}
+
+.speaking-metric-value {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* STT 뱃지 */
+.stt-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(2, 132, 199, 0.08);
+  border: 1px solid rgba(2, 132, 199, 0.2);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-top: 8px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.stt-badge.hidden {
+  display: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .feedback-error-message {

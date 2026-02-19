@@ -20,8 +20,8 @@ ACTFL 기준에 따라 영어 답변을 평가합니다.
   "grammar_score": 72,
   "fluency_score": 65,
   "vocabulary_score": 68,
-  "pronunciation_score": 70,
-  "content_organization_score": 65,
+  "task_completion_score": 70,
+  "content_delivery_score": 65,
   "strengths": ["잘한 점 1", "잘한 점 2", "잘한 점 3"],
   "improvements": ["개선할 점 1 (목표 레벨 기준)", "개선할 점 2", "개선할 점 3"]
 }
@@ -31,8 +31,8 @@ ACTFL 기준에 따라 영어 답변을 평가합니다.
 - grammar_score: 문법 정확도 (0~100)
 - fluency_score: 유창성, 자연스러움 (0~100)
 - vocabulary_score: 어휘 다양성과 적절성 (0~100)
-- pronunciation_score: 발음 자연스러움 추정 (0~100, 텍스트 기반 추정)
-- content_organization_score: 답변 구성력 (0~100, 도입-본론-마무리 구조)
+- task_completion_score: 문제 이해력 (0~100, 질문의 의도를 정확히 파악하고 적절히 답변했는지)
+- content_delivery_score: 내용 표현력 (0~100, 구체적 사례/설명의 풍부함, 논리적 전개)
 - strengths: 잘한 점 3가지 (한국어)
 - improvements: 목표 레벨 도달을 위한 개선점 3가지 (한국어)
 
@@ -152,8 +152,8 @@ async function evaluateAnswers(answers, targetLevel) {
       grammar_score: Number(result.grammar_score) || 0,
       fluency_score: Number(result.fluency_score) || 0,
       vocabulary_score: Number(result.vocabulary_score) || 0,
-      pronunciation_score: Number(result.pronunciation_score) || 0,
-      content_organization_score: Number(result.content_organization_score) || 0,
+      task_completion_score: Number(result.task_completion_score) || 0,
+      content_delivery_score: Number(result.content_delivery_score) || 0,
       strengths: Array.isArray(result.strengths) ? result.strengths.slice(0, 3) : [],
       improvements: Array.isArray(result.improvements) ? result.improvements.slice(0, 3) : []
     };

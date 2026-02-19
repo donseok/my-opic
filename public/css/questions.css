@@ -158,3 +158,59 @@
 .guide-phrase:hover {
   background: rgba(2, 132, 199, 0.12);
 }
+
+/* 레벨별 가이드 탭 */
+.guide-level-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.guide-level-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.guide-level-tab {
+  padding: 5px 12px;
+  border: 1.5px solid rgba(2, 132, 199, 0.2);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--accent);
+  font-size: 12px;
+  font-family: var(--font-family);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.guide-level-tab:hover {
+  background: rgba(2, 132, 199, 0.06);
+}
+
+.guide-level-tab.active {
+  background: var(--accent);
+  color: #FFFFFF;
+  border-color: var(--accent);
+}
+
+.guide-level-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  background: rgba(2, 132, 199, 0.06);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.guide-body {
+  animation: fadeIn 0.2s ease;
+}
+
+.mt-12 {
+  margin-top: 12px;
+}

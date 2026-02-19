@@ -63,6 +63,7 @@ const srsRouter = require('./routes/srs');
 const studySessionsRouter = require('./routes/studySessions');
 const attendanceRouter = require('./routes/attendance');
 const sentencePracticeRouter = require('./routes/sentencePractice');
+const vocabularyRouter = require('./routes/vocabulary');
 
 app.use('/api/v1/topics', topicsRouter);
 app.use('/api/v1/levels', levelsRouter);
@@ -78,6 +79,7 @@ app.use('/api/v1/srs', srsRouter);
 app.use('/api/v1/study-sessions', studySessionsRouter);
 app.use('/api/v1/attendance', attendanceRouter);
 app.use('/api/v1/sentence-practice', sentencePracticeRouter);
+app.use('/api/v1/vocabulary', vocabularyRouter);
 
 // SPA 폴백 — 모든 비-API 요청을 index.html로
 app.get('*', (req, res) => {

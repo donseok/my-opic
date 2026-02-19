@@ -8,6 +8,7 @@ const App = {
     survey: SurveyModule,
     questions: QuestionsModule,
     scripts: typeof ScriptsModule !== 'undefined' ? ScriptsModule : null,
+    vocabulary: typeof VocabularyModule !== 'undefined' ? VocabularyModule : null,
     exam: ExamModule,
     feedback: FeedbackModule,
     srs: typeof SrsModule !== 'undefined' ? SrsModule : null,

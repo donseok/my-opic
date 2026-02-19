@@ -344,3 +344,137 @@ INSERT OR IGNORE INTO survey_tips (id, topic_id, target_level, tip_type, title, 
 (23, NULL, 'IM2', 'strategy', '📝 IM2 중급 전략', '문장을 연결하여 단락을 만드세요. 구체적인 예시와 이유를 포함하고, 70단어 이상을 목표로 하세요.', 9),
 (24, NULL, 'IM3', 'strategy', '📝 IM3 상급 전략', '문단 수준의 답변을 목표로 하세요. 도입-본론-마무리 구조를 사용하고, 80단어 이상으로 답변하세요. 구체적 경험 1~2개를 반드시 포함하세요.', 9),
 (25, NULL, NULL, 'strategy', '⏰ 시간 관리 꿀팁', '답변 시간은 보통 40~90초입니다. 너무 짧으면 감점되고, 너무 길면 내용이 산만해집니다. 연습할 때 타이머를 활용하세요.', 7);
+
+-- =============================================
+-- 8. 주제별 핵심 단어/표현 (100개)
+-- =============================================
+
+-- 자기소개 (주제 1)
+INSERT OR IGNORE INTO topic_vocabulary (id, topic_id, word, meaning_ko, example_sentence, category) VALUES
+(1,  1, 'introduce myself',       '자기소개하다',           'Let me introduce myself briefly.',           'expression'),
+(2,  1, 'be passionate about',    '~에 열정적이다',         'I am passionate about learning new things.',  'expression'),
+(3,  1, 'personality trait',      '성격 특성',              'My best personality trait is being patient.',  'noun'),
+(4,  1, 'work as a',              '~로 일하다',             'I currently work as a software engineer.',    'expression'),
+(5,  1, 'in my free time',        '여가 시간에',            'In my free time, I enjoy reading books.',     'expression'),
+(6,  1, 'outgoing',               '외향적인',               'I consider myself to be quite outgoing.',     'adjective'),
+(7,  1, 'get along with',         '~와 잘 지내다',          'I get along with most people easily.',        'expression'),
+(8,  1, 'look forward to',        '~을 기대하다',           'I always look forward to weekends.',          'expression'),
+(9,  1, 'daily routine',          '일상 루틴',              'My daily routine starts at 7 AM.',             'noun'),
+(10, 1, 'keep in touch',          '연락을 유지하다',         'I keep in touch with my old friends.',        'expression');
+
+-- 집/이웃 (주제 2)
+INSERT OR IGNORE INTO topic_vocabulary (id, topic_id, word, meaning_ko, example_sentence, category) VALUES
+(11, 2, 'apartment complex',      '아파트 단지',            'I live in a large apartment complex.',        'noun'),
+(12, 2, 'neighborhood',           '동네, 이웃',             'My neighborhood is very quiet and peaceful.', 'noun'),
+(13, 2, 'convenient location',    '편리한 위치',            'My home is in a very convenient location.',   'noun'),
+(14, 2, 'move in / move out',     '이사 오다/가다',         'I moved in about three years ago.',           'expression'),
+(15, 2, 'cozy',                   '아늑한',                 'My room is small but very cozy.',             'adjective'),
+(16, 2, 'renovate',               '리모델링하다',           'We renovated the kitchen last year.',         'verb'),
+(17, 2, 'residential area',       '주거 지역',              'I live in a quiet residential area.',         'noun'),
+(18, 2, 'spacious',               '넓은',                   'The living room is very spacious.',           'adjective'),
+(19, 2, 'take out the trash',     '쓰레기를 버리다',         'I take out the trash every evening.',        'expression'),
+(20, 2, 'next-door neighbor',     '옆집 이웃',              'My next-door neighbor is very friendly.',     'noun');
+
+-- 여가활동 (주제 3)
+INSERT OR IGNORE INTO topic_vocabulary (id, topic_id, word, meaning_ko, example_sentence, category) VALUES
+(21, 3, 'hang out with friends',  '친구들과 어울리다',       'I love to hang out with friends on weekends.','expression'),
+(22, 3, 'binge-watch',            '몰아보다',               'I sometimes binge-watch TV series.',          'verb'),
+(23, 3, 'unwind',                 '긴장을 풀다',            'I like to unwind by listening to music.',     'verb'),
+(24, 3, 'take up a hobby',        '취미를 시작하다',         'I recently took up photography.',             'expression'),
+(25, 3, 'spare time',             '여유 시간',              'I spend my spare time gardening.',            'noun'),
+(26, 3, 'go for a walk',          '산책하다',               'I usually go for a walk after dinner.',       'expression'),
+(27, 3, 'browse the internet',    '인터넷을 둘러보다',       'I often browse the internet for fun.',       'expression'),
+(28, 3, 'socialize',              '사교 활동을 하다',        'I enjoy socializing with coworkers.',         'verb'),
+(29, 3, 'kill time',              '시간을 보내다',           'I kill time by playing mobile games.',        'expression'),
+(30, 3, 'relaxing activity',      '여유로운 활동',           'Yoga is my favorite relaxing activity.',      'noun');
+
+-- 여행 (주제 4)
+INSERT OR IGNORE INTO topic_vocabulary (id, topic_id, word, meaning_ko, example_sentence, category) VALUES
+(31, 4, 'travel abroad',          '해외 여행하다',           'I travel abroad about once a year.',          'expression'),
+(32, 4, 'book in advance',        '미리 예약하다',           'I always book my hotel in advance.',          'expression'),
+(33, 4, 'sightseeing',            '관광',                   'We spent the day sightseeing in the city.',   'noun'),
+(34, 4, 'local cuisine',          '현지 음식',              'I always try the local cuisine when I travel.','noun'),
+(35, 4, 'travel itinerary',       '여행 일정',              'I planned a detailed travel itinerary.',      'noun'),
+(36, 4, 'memorable experience',   '기억에 남는 경험',        'It was truly a memorable experience.',        'noun'),
+(37, 4, 'tourist attraction',     '관광 명소',              'We visited several famous tourist attractions.','noun'),
+(38, 4, 'pack my bags',           '짐을 싸다',              'I packed my bags the night before.',          'expression'),
+(39, 4, 'jet lag',                '시차 피로',              'I suffered from jet lag for two days.',       'noun'),
+(40, 4, 'road trip',              '자동차 여행',            'We went on a road trip along the coast.',     'noun');
+
+-- 운동/스포츠 (주제 5)
+INSERT OR IGNORE INTO topic_vocabulary (id, topic_id, word, meaning_ko, example_sentence, category) VALUES
+(41, 5, 'work out',               '운동하다',               'I work out at the gym three times a week.',   'expression'),
+(42, 5, 'stay in shape',          '건강을 유지하다',         'I try to stay in shape by jogging.',          'expression'),
+(43, 5, 'warm up / cool down',    '준비운동/마무리운동',     'I always warm up before exercising.',         'expression'),
+(44, 5, 'competitive sport',      '경쟁 스포츠',            'Basketball is a competitive sport I enjoy.',  'noun'),
+(45, 5, 'physical fitness',       '체력',                   'Physical fitness is important for health.',   'noun'),
+(46, 5, 'personal trainer',       '개인 트레이너',           'I hired a personal trainer last month.',      'noun'),
+(47, 5, 'marathon',               '마라톤',                 'I am training for my first marathon.',        'noun'),
+(48, 5, 'be into',                '~에 빠져있다',           'I am really into swimming these days.',       'expression'),
+(49, 5, 'keep track of',          '기록을 추적하다',         'I keep track of my progress with an app.',   'expression'),
+(50, 5, 'team sport',             '단체 스포츠',            'Soccer is my favorite team sport.',           'noun');
+
+-- 음악/영화 (주제 6)
+INSERT OR IGNORE INTO topic_vocabulary (id, topic_id, word, meaning_ko, example_sentence, category) VALUES
+(51, 6, 'genre',                  '장르',                   'My favorite music genre is pop.',             'noun'),
+(52, 6, 'soundtrack',             '사운드트랙',              'The movie soundtrack was amazing.',           'noun'),
+(53, 6, 'blockbuster',            '블록버스터',              'I watched a blockbuster movie last weekend.', 'noun'),
+(54, 6, 'be moved by',            '~에 감동받다',           'I was deeply moved by the storyline.',        'expression'),
+(55, 6, 'catchy melody',          '귀에 착 달라붙는 멜로디', 'That song has a really catchy melody.',       'noun'),
+(56, 6, 'streaming service',      '스트리밍 서비스',         'I subscribe to several streaming services.',  'noun'),
+(57, 6, 'live performance',       '라이브 공연',            'Seeing a live performance is an amazing experience.','noun'),
+(58, 6, 'plot twist',             '반전',                   'The plot twist at the end was surprising.',   'noun'),
+(59, 6, 'based on a true story',  '실화 바탕',              'The movie is based on a true story.',         'expression'),
+(60, 6, 'binge-listen',           '음악을 몰아듣다',        'I tend to binge-listen to new albums.',       'verb');
+
+-- 요리/음식 (주제 7)
+INSERT OR IGNORE INTO topic_vocabulary (id, topic_id, word, meaning_ko, example_sentence, category) VALUES
+(61, 7, 'homemade',               '집에서 만든',            'I prefer homemade meals over fast food.',     'adjective'),
+(62, 7, 'recipe',                 '레시피',                 'I found a great recipe online.',              'noun'),
+(63, 7, 'ingredient',             '재료',                   'Fresh ingredients make a big difference.',    'noun'),
+(64, 7, 'dining out',             '외식',                   'We enjoy dining out on special occasions.',   'noun'),
+(65, 7, 'try out a new dish',     '새로운 음식을 시도하다',   'I love trying out new dishes.',              'expression'),
+(66, 7, 'comfort food',           '위안이 되는 음식',        'Kimchi stew is my comfort food.',             'noun'),
+(67, 7, 'food allergy',           '음식 알레르기',           'I have a food allergy to shellfish.',         'noun'),
+(68, 7, 'side dish',              '반찬',                   'We always have several side dishes.',         'noun'),
+(69, 7, 'from scratch',           '처음부터',               'I made the pasta sauce from scratch.',        'expression'),
+(70, 7, 'mouthwatering',          '군침이 도는',            'The steak looked absolutely mouthwatering.',  'adjective');
+
+-- 기술/인터넷 (주제 8)
+INSERT OR IGNORE INTO topic_vocabulary (id, topic_id, word, meaning_ko, example_sentence, category) VALUES
+(71, 8, 'cutting-edge technology','최첨단 기술',             'This phone uses cutting-edge technology.',    'noun'),
+(72, 8, 'social media',           '소셜 미디어',            'I check social media several times a day.',   'noun'),
+(73, 8, 'user-friendly',          '사용하기 쉬운',           'The app is very user-friendly.',              'adjective'),
+(74, 8, 'tech-savvy',             '기술에 능숙한',           'Younger generations are very tech-savvy.',    'adjective'),
+(75, 8, 'digital detox',          '디지털 디톡스',           'I sometimes do a digital detox on weekends.', 'noun'),
+(76, 8, 'online shopping',        '온라인 쇼핑',            'I do most of my online shopping on my phone.','noun'),
+(77, 8, 'artificial intelligence','인공지능',                'Artificial intelligence is changing our lives.','noun'),
+(78, 8, 'stay connected',         '연결 상태를 유지하다',     'Technology helps us stay connected.',         'expression'),
+(79, 8, 'download / upload',      '다운로드/업로드',         'I download music from streaming apps.',       'verb'),
+(80, 8, 'cybersecurity',          '사이버 보안',            'Cybersecurity is becoming more important.',   'noun');
+
+-- 교육 (주제 9)
+INSERT OR IGNORE INTO topic_vocabulary (id, topic_id, word, meaning_ko, example_sentence, category) VALUES
+(81, 9, 'major in',               '~을 전공하다',           'I majored in business administration.',       'expression'),
+(82, 9, 'academic achievement',   '학업 성취',              'I am proud of my academic achievements.',     'noun'),
+(83, 9, 'extracurricular',        '교과 외의',              'I participated in extracurricular activities.','adjective'),
+(84, 9, 'distance learning',      '원격 학습',              'Distance learning became common during COVID.','noun'),
+(85, 9, 'tuition fee',            '등록금',                 'Tuition fees have been increasing every year.','noun'),
+(86, 9, 'graduate from',          '~을 졸업하다',           'I graduated from university in 2020.',        'expression'),
+(87, 9, 'study abroad',           '유학하다',               'I have always wanted to study abroad.',       'expression'),
+(88, 9, 'critical thinking',      '비판적 사고',            'Schools should focus on critical thinking.',  'noun'),
+(89, 9, 'hands-on experience',    '실무 경험',              'Internships provide hands-on experience.',    'noun'),
+(90, 9, 'lifelong learning',      '평생 학습',              'I believe in the importance of lifelong learning.','noun');
+
+-- 직장/업무 (주제 10)
+INSERT OR IGNORE INTO topic_vocabulary (id, topic_id, word, meaning_ko, example_sentence, category) VALUES
+(91,  10, 'deadline',              '마감 기한',              'I always try to meet my deadlines.',          'noun'),
+(92,  10, 'work-life balance',     '일과 삶의 균형',         'I value work-life balance a lot.',            'noun'),
+(93,  10, 'promotion',             '승진',                   'I got a promotion last year.',                'noun'),
+(94,  10, 'colleague',             '동료',                   'My colleagues are very supportive.',          'noun'),
+(95,  10, 'be in charge of',      '~을 담당하다',           'I am in charge of the marketing team.',       'expression'),
+(96,  10, 'commute',               '통근',                   'My commute takes about 40 minutes.',          'noun'),
+(97,  10, 'remote work',           '원격 근무',              'I work remotely two days a week.',            'noun'),
+(98,  10, 'meeting',               '회의',                   'We have team meetings every Monday.',         'noun'),
+(99,  10, 'job satisfaction',      '직업 만족도',            'Job satisfaction is more important than salary.','noun'),
+(100, 10, 'career development',    '경력 개발',              'I focus on continuous career development.',   'noun');

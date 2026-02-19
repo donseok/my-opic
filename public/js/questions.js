@@ -198,7 +198,7 @@ const QuestionsModule = {
   },
 
   /**
-   * 답변 가이드 표시/숨기기
+   * 답변 가이드 표시/숨기기 (레벨별 탭 비교 지원)
    */
   async toggleGuide(questionId, cardEl) {
     const existing = cardEl.querySelector('.guide-panel');
@@ -209,13 +209,14 @@ const QuestionsModule = {
 
     try {
       const settings = await apiGet('/settings');
-      const levelCode = settings.target_level || 'IM1';
-      const guides = await apiGet('/questions/' + questionId + '/guide?level_code=' + levelCode);
+      const targetLevel = settings.target_level || 'IM1';
+      // 전체 레벨 가이드 조회
+      const allGuides = await apiGet('/questions/' + questionId + '/guide');
 
       const panel = document.createElement('div');
       panel.className = 'guide-panel';
 
-      if (guides.length === 0) {
+      if (allGuides.length === 0) {
         const p = document.createElement('p');
         p.className = 'guide-content';
         p.textContent = '이 질문에 대한 답변 가이드가 아직 없습니다.';
@@ -224,58 +225,100 @@ const QuestionsModule = {
         return;
       }
 
-      const guide = guides[0];
+      // 레벨 탭 UI (여러 레벨이 있을 때만)
+      if (allGuides.length > 1) {
+        const tabBar = document.createElement('div');
+        tabBar.className = 'guide-level-tabs';
 
-      // 답변 구조
-      if (guide.structure) {
-        const structTitle = document.createElement('div');
-        structTitle.className = 'guide-section-title';
-        structTitle.textContent = '📝 답변 구조';
-        panel.appendChild(structTitle);
-
-        const structContent = document.createElement('div');
-        structContent.className = 'guide-content';
-        structContent.textContent = guide.structure;
-        panel.appendChild(structContent);
-      }
-
-      // 핵심 표현
-      if (guide.key_phrases) {
-        try {
-          const phrases = JSON.parse(guide.key_phrases);
-          const phrasesTitle = document.createElement('div');
-          phrasesTitle.className = 'guide-section-title';
-          phrasesTitle.textContent = '💬 핵심 표현';
-          panel.appendChild(phrasesTitle);
-
-          const phrasesDiv = document.createElement('div');
-          phrasesDiv.className = 'guide-phrases';
-          phrases.forEach(p => {
-            const span = document.createElement('span');
-            span.className = 'guide-phrase';
-            span.textContent = p;
-            phrasesDiv.appendChild(span);
+        allGuides.forEach((g, idx) => {
+          const tab = document.createElement('button');
+          tab.className = 'guide-level-tab';
+          if (g.level_code === targetLevel || (idx === 0 && !allGuides.find(x => x.level_code === targetLevel))) {
+            tab.classList.add('active');
+          }
+          tab.textContent = g.level_code;
+          tab.addEventListener('click', () => {
+            tabBar.querySelectorAll('.guide-level-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            this._renderGuideContent(guideBody, g);
           });
-          panel.appendChild(phrasesDiv);
-        } catch (e) { /* 파싱 실패 무시 */ }
+          tabBar.appendChild(tab);
+        });
+
+        panel.appendChild(tabBar);
       }
 
-      // 목표 단어 수
-      if (guide.target_words) {
-        const wordsTitle = document.createElement('div');
-        wordsTitle.className = 'guide-section-title mt-12';
-        wordsTitle.textContent = '🎯 목표 단어 수';
-        panel.appendChild(wordsTitle);
+      const guideBody = document.createElement('div');
+      guideBody.className = 'guide-body';
+      panel.appendChild(guideBody);
 
-        const wordsContent = document.createElement('div');
-        wordsContent.className = 'guide-content';
-        wordsContent.textContent = guide.target_words + '단어';
-        panel.appendChild(wordsContent);
-      }
+      // 초기 표시: 목표 레벨 또는 첫 번째 가이드
+      const initialGuide = allGuides.find(g => g.level_code === targetLevel) || allGuides[0];
+      this._renderGuideContent(guideBody, initialGuide);
 
       cardEl.appendChild(panel);
     } catch (err) {
       console.error('가이드 로드 실패:', err);
+    }
+  },
+
+  /**
+   * 가이드 내용 렌더링
+   */
+  _renderGuideContent(container, guide) {
+    container.replaceChildren();
+
+    // 레벨 뱃지
+    const levelBadge = document.createElement('div');
+    levelBadge.className = 'guide-level-badge';
+    levelBadge.textContent = guide.level_code + ' 레벨 가이드';
+    container.appendChild(levelBadge);
+
+    // 답변 구조
+    if (guide.structure) {
+      const structTitle = document.createElement('div');
+      structTitle.className = 'guide-section-title';
+      structTitle.textContent = '📝 답변 구조';
+      container.appendChild(structTitle);
+
+      const structContent = document.createElement('div');
+      structContent.className = 'guide-content';
+      structContent.textContent = guide.structure;
+      container.appendChild(structContent);
+    }
+
+    // 핵심 표현
+    if (guide.key_phrases) {
+      try {
+        const phrases = JSON.parse(guide.key_phrases);
+        const phrasesTitle = document.createElement('div');
+        phrasesTitle.className = 'guide-section-title';
+        phrasesTitle.textContent = '💬 핵심 표현';
+        container.appendChild(phrasesTitle);
+
+        const phrasesDiv = document.createElement('div');
+        phrasesDiv.className = 'guide-phrases';
+        phrases.forEach(p => {
+          const span = document.createElement('span');
+          span.className = 'guide-phrase';
+          span.textContent = p;
+          phrasesDiv.appendChild(span);
+        });
+        container.appendChild(phrasesDiv);
+      } catch (e) { /* 파싱 실패 무시 */ }
+    }
+
+    // 목표 단어 수
+    if (guide.target_words) {
+      const wordsTitle = document.createElement('div');
+      wordsTitle.className = 'guide-section-title mt-12';
+      wordsTitle.textContent = '🎯 목표 단어 수';
+      container.appendChild(wordsTitle);
+
+      const wordsContent = document.createElement('div');
+      wordsContent.className = 'guide-content';
+      wordsContent.textContent = guide.target_words + '단어';
+      container.appendChild(wordsContent);
     }
   }
 };

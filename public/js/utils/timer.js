@@ -109,5 +109,38 @@ const TimerUtil = {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
+  },
+
+  /**
+   * 비프음 재생 (AudioContext 기반)
+   * @param {number} freq - 주파수 (Hz)
+   * @param {number} duration - 지속 시간 (ms)
+   */
+  playBeep(freq, duration) {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq || 800;
+      gain.gain.value = 0.3;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + (duration || 200) / 1000);
+      // 종료 후 AudioContext 닫기
+      osc.onended = () => ctx.close();
+    } catch (e) {
+      // AudioContext 미지원 시 무시
+    }
+  },
+
+  /**
+   * 더블 비프음 재생
+   * @param {number} freq - 주파수
+   */
+  playDoubleBeep(freq) {
+    this.playBeep(freq || 900, 150);
+    setTimeout(() => this.playBeep(freq || 900, 150), 250);
   }
 };

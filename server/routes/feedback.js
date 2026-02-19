@@ -26,7 +26,7 @@ router.post('/evaluate', async (req, res, next) => {
 
     db.prepare(
       `INSERT OR REPLACE INTO ai_feedbacks
-       (session_id, predicted_level, grammar_score, fluency_score, vocabulary_score, pronunciation_score, content_organization_score, strengths, improvements, raw_response, created_at)
+       (session_id, predicted_level, grammar_score, fluency_score, vocabulary_score, task_completion_score, content_delivery_score, strengths, improvements, raw_response, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       session_id,
@@ -34,8 +34,8 @@ router.post('/evaluate', async (req, res, next) => {
       feedback.grammar_score,
       feedback.fluency_score,
       feedback.vocabulary_score,
-      feedback.pronunciation_score || 0,
-      feedback.content_organization_score || 0,
+      feedback.task_completion_score || 0,
+      feedback.content_delivery_score || 0,
       JSON.stringify(feedback.strengths),
       JSON.stringify(feedback.improvements),
       JSON.stringify(feedback),
@@ -46,15 +46,15 @@ router.post('/evaluate', async (req, res, next) => {
     try {
       db.prepare(
         `INSERT INTO skill_assessments
-         (session_id, grammar_score, vocabulary_score, fluency_score, pronunciation_score, content_organization_score, assessed_at)
+         (session_id, grammar_score, vocabulary_score, fluency_score, task_completion_score, content_delivery_score, assessed_at)
          VALUES (?, ?, ?, ?, ?, ?, ?)`
       ).run(
         session_id,
         feedback.grammar_score,
         feedback.vocabulary_score,
         feedback.fluency_score,
-        feedback.pronunciation_score || 0,
-        feedback.content_organization_score || 0,
+        feedback.task_completion_score || 0,
+        feedback.content_delivery_score || 0,
         now
       );
     } catch (e) {

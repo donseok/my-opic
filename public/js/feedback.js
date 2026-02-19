@@ -4,6 +4,7 @@ const FeedbackModule = {
   lastSessionId: null,
   lastFeedback: null,
   isLoading: false,
+  _lastSpeechMetrics: null,
 
   /**
    * AI 피드백 화면 렌더링
@@ -75,6 +76,8 @@ const FeedbackModule = {
   async requestFeedback(sessionId, answers, targetLevel) {
     this.isLoading = true;
     this.lastSessionId = sessionId;
+    // 음성 메트릭 수집
+    this._lastSpeechMetrics = answers.map(a => a.speech_metrics || null);
 
     // 화면 업데이트
     const container = document.getElementById('app-content');
@@ -161,8 +164,8 @@ const FeedbackModule = {
       { label: '문법', value: feedback.grammar_score, cls: 'score-grammar' },
       { label: '유창성', value: feedback.fluency_score, cls: 'score-fluency' },
       { label: '어휘', value: feedback.vocabulary_score, cls: 'score-vocab' },
-      { label: '발음', value: feedback.pronunciation_score || 0, cls: 'score-pronunciation' },
-      { label: '구성력', value: feedback.content_organization_score || 0, cls: 'score-organization' }
+      { label: '문제 이해력', value: feedback.task_completion_score || 0, cls: 'score-task-completion' },
+      { label: '내용 표현력', value: feedback.content_delivery_score || 0, cls: 'score-content-delivery' }
     ];
 
     scoreData.forEach(s => {
@@ -231,6 +234,59 @@ const FeedbackModule = {
     });
     improvDiv.appendChild(improvList);
     container.appendChild(improvDiv);
+
+    // 음성 메트릭 표시 (모의시험에서 음성 답변이 있었을 때)
+    if (this._lastSpeechMetrics && this._lastSpeechMetrics.length > 0) {
+      const metricsSection = document.createElement('div');
+      metricsSection.className = 'feedback-cards';
+      const metricsTitle = document.createElement('div');
+      metricsTitle.className = 'feedback-card-title';
+      metricsTitle.textContent = '🎙️ Speaking 분석';
+      metricsSection.appendChild(metricsTitle);
+
+      const metricsGrid = document.createElement('div');
+      metricsGrid.className = 'speaking-metrics-grid';
+
+      this._lastSpeechMetrics.forEach((m, idx) => {
+        if (!m) return;
+        const card = document.createElement('div');
+        card.className = 'speaking-metric-card';
+
+        const label = document.createElement('div');
+        label.className = 'speaking-metric-label';
+        label.textContent = '문제 ' + (idx + 1);
+        card.appendChild(label);
+
+        const items = [
+          { k: 'WPM', v: m.wpm || 0, sub: typeof SpeechAnalysisUtil !== 'undefined' ? SpeechAnalysisUtil.getSpeedRating(m.wpm || 0) : '' },
+          { k: '단어 수', v: m.word_count || 0 },
+          { k: '녹음 시간', v: (m.speaking_duration || 0) + '초' },
+          { k: '멈춤 횟수', v: m.pause_count || 0 }
+        ];
+
+        items.forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'speaking-metric-row';
+          const kEl = document.createElement('span');
+          kEl.className = 'speaking-metric-key';
+          kEl.textContent = item.k;
+          const vEl = document.createElement('span');
+          vEl.className = 'speaking-metric-value';
+          vEl.textContent = item.v;
+          if (item.sub) {
+            vEl.textContent += ' (' + item.sub + ')';
+          }
+          row.appendChild(kEl);
+          row.appendChild(vEl);
+          card.appendChild(row);
+        });
+
+        metricsGrid.appendChild(card);
+      });
+
+      metricsSection.appendChild(metricsGrid);
+      container.appendChild(metricsSection);
+    }
 
     // 레벨 진행 경로
     try {

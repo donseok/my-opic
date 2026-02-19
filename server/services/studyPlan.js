@@ -29,7 +29,7 @@ function generateDailyPlan(db) {
   // 1. 최근 5회 시험 세션의 AI 피드백 조회
   const recentFeedbacks = db.prepare(`
     SELECT af.grammar_score, af.fluency_score, af.vocabulary_score,
-           af.pronunciation_score, af.content_organization_score,
+           af.task_completion_score, af.content_delivery_score,
            es.completed_at, es.target_level
     FROM ai_feedbacks af
     JOIN exam_sessions es ON af.session_id = es.id
@@ -43,19 +43,19 @@ function generateDailyPlan(db) {
     grammar: 0,
     vocabulary: 0,
     fluency: 0,
-    pronunciation: 0,
-    content_organization: 0
+    task_completion: 0,
+    content_delivery: 0
   };
 
   if (recentFeedbacks.length > 0) {
-    let counts = { grammar: 0, vocabulary: 0, fluency: 0, pronunciation: 0, content_organization: 0 };
+    let counts = { grammar: 0, vocabulary: 0, fluency: 0, task_completion: 0, content_delivery: 0 };
 
     for (const fb of recentFeedbacks) {
       if (fb.grammar_score != null) { avgScores.grammar += fb.grammar_score; counts.grammar++; }
       if (fb.vocabulary_score != null) { avgScores.vocabulary += fb.vocabulary_score; counts.vocabulary++; }
       if (fb.fluency_score != null) { avgScores.fluency += fb.fluency_score; counts.fluency++; }
-      if (fb.pronunciation_score != null) { avgScores.pronunciation += fb.pronunciation_score; counts.pronunciation++; }
-      if (fb.content_organization_score != null) { avgScores.content_organization += fb.content_organization_score; counts.content_organization++; }
+      if (fb.task_completion_score != null) { avgScores.task_completion += fb.task_completion_score; counts.task_completion++; }
+      if (fb.content_delivery_score != null) { avgScores.content_delivery += fb.content_delivery_score; counts.content_delivery++; }
     }
 
     for (const key of Object.keys(avgScores)) {
@@ -70,8 +70,8 @@ function generateDailyPlan(db) {
     grammar: '문법 (Grammar)',
     vocabulary: '어휘 (Vocabulary)',
     fluency: '유창성 (Fluency)',
-    pronunciation: '발음 (Pronunciation)',
-    content_organization: '내용 구성 (Content Organization)'
+    task_completion: '문제 이해력 (Task Completion)',
+    content_delivery: '내용 표현력 (Content Delivery)'
   };
 
   for (const [key, score] of Object.entries(avgScores)) {
@@ -219,7 +219,7 @@ function getWeaknessAnalysis(db) {
   // 최근 5회 시험 피드백 조회
   const recentFeedbacks = db.prepare(`
     SELECT af.grammar_score, af.fluency_score, af.vocabulary_score,
-           af.pronunciation_score, af.content_organization_score
+           af.task_completion_score, af.content_delivery_score
     FROM ai_feedbacks af
     JOIN exam_sessions es ON af.session_id = es.id
     WHERE es.completed_at IS NOT NULL
@@ -232,19 +232,19 @@ function getWeaknessAnalysis(db) {
     grammar: 0,
     vocabulary: 0,
     fluency: 0,
-    pronunciation: 0,
-    content_organization: 0
+    task_completion: 0,
+    content_delivery: 0
   };
 
   if (recentFeedbacks.length > 0) {
-    let counts = { grammar: 0, vocabulary: 0, fluency: 0, pronunciation: 0, content_organization: 0 };
+    let counts = { grammar: 0, vocabulary: 0, fluency: 0, task_completion: 0, content_delivery: 0 };
 
     for (const fb of recentFeedbacks) {
       if (fb.grammar_score != null) { skills.grammar += fb.grammar_score; counts.grammar++; }
       if (fb.vocabulary_score != null) { skills.vocabulary += fb.vocabulary_score; counts.vocabulary++; }
       if (fb.fluency_score != null) { skills.fluency += fb.fluency_score; counts.fluency++; }
-      if (fb.pronunciation_score != null) { skills.pronunciation += fb.pronunciation_score; counts.pronunciation++; }
-      if (fb.content_organization_score != null) { skills.content_organization += fb.content_organization_score; counts.content_organization++; }
+      if (fb.task_completion_score != null) { skills.task_completion += fb.task_completion_score; counts.task_completion++; }
+      if (fb.content_delivery_score != null) { skills.content_delivery += fb.content_delivery_score; counts.content_delivery++; }
     }
 
     for (const key of Object.keys(skills)) {
